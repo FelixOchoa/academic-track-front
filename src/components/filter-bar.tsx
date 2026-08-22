@@ -1,73 +1,88 @@
 'use client';
 
 import React from 'react';
-import { Filter, Layers, Calendar, BookOpen, Building2 } from 'lucide-react';
+import { Filter, Layers, Calendar, BookOpen, Building2, RotateCcw } from 'lucide-react';
+import i18n from '@/i18n/es.json';
 
 interface FilterBarProps {
-  facultad: string;
-  programa: string;
-  periodo: string;
-  semestre: string;
-  onProgramaChange: (val: string) => void;
-  onPeriodoChange: (val: string) => void;
-  onSemestreChange: (val: string) => void;
+  faculty: string;
+  program: string;
+  period: string;
+  semester: string;
+  onProgramChange: (val: string) => void;
+  onPeriodChange: (val: string) => void;
+  onSemesterChange: (val: string) => void;
+  onResetFilters: () => void;
 }
 
 export function FilterBar({
-  facultad,
-  programa,
-  periodo,
-  semestre,
-  onProgramaChange,
-  onPeriodoChange,
-  onSemestreChange,
+  faculty,
+  program,
+  period,
+  semester,
+  onProgramChange,
+  onPeriodChange,
+  onSemesterChange,
+  onResetFilters,
 }: FilterBarProps) {
+  const t = i18n.filters;
+
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm mb-8">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-sm mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         
-        {/* Header Indicator */}
-        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold text-sm shrink-0">
-          <div className="p-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg">
-            <Filter className="w-4 h-4" />
+        <div className="flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold text-sm">
+            <div className="p-2 bg-[#f4faec] dark:bg-[#152708] text-[#67a623] dark:text-[#afdd7a] rounded-lg">
+              <Filter className="w-4 h-4" />
+            </div>
+            <span className="whitespace-nowrap">{t.title}</span>
           </div>
-          <span className="whitespace-nowrap">Filtros Globales de Visualización</span>
+
+          <button
+            onClick={onResetFilters}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-[#67a623] dark:hover:text-[#afdd7a] hover:bg-[#f4faec] dark:hover:bg-[#152708] rounded-xl transition-all border border-slate-200 dark:border-slate-700 cursor-pointer shrink-0"
+            title={t.clearTooltip}
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-[#67a623]" />
+            <span>{t.clearButton}</span>
+          </button>
         </div>
 
-        {/* Dropdowns Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full lg:w-auto flex-1 min-w-0">
           
-          {/* Item 1: Facultad */}
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl min-w-0">
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl min-w-0 cursor-default">
             <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
             <div className="flex flex-col min-w-0 w-full">
               <span className="text-[10px] uppercase font-bold text-slate-400 leading-tight">
-                Facultad
+                {t.facultyLabel}
               </span>
               <span 
                 className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate"
-                title={facultad}
+                title={faculty}
               >
-                {facultad}
+                {faculty}
               </span>
             </div>
           </div>
 
-          {/* Item 2: Selector de Programa */}
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 transition-all min-w-0">
-            <BookOpen className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div className="flex flex-col min-w-0 w-full">
+          <div 
+            onClick={() => document.getElementById('select-programa')?.focus()}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+          >
+            <BookOpen className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
+            <div className="flex flex-col min-w-0 w-full cursor-pointer">
               <label htmlFor="select-programa" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
-                Programa Académico
+                {t.programLabel}
               </label>
               <select
                 id="select-programa"
-                value={programa}
-                onChange={(e) => onProgramaChange(e.target.value)}
+                value={program}
+                onChange={(e) => onProgramChange(e.target.value)}
                 className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
-                title={programa}
+                title={program}
               >
-                <option value="Todos los Programas">Todos los Programas (Consolidado)</option>
+                <option value="Todos los Programas">{t.allProgramsOption}</option>
                 <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
                 <option value="Ingeniería Industrial">Ingeniería Industrial</option>
                 <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
@@ -75,17 +90,19 @@ export function FilterBar({
             </div>
           </div>
 
-          {/* Item 3: Selector de Periodo */}
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 transition-all min-w-0">
-            <Calendar className="w-4 h-4 text-teal-600 shrink-0" />
-            <div className="flex flex-col min-w-0 w-full">
+          <div 
+            onClick={() => document.getElementById('select-periodo')?.focus()}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+          >
+            <Calendar className="w-4 h-4 text-[#548a1a] shrink-0 pointer-events-none" />
+            <div className="flex flex-col min-w-0 w-full cursor-pointer">
               <label htmlFor="select-periodo" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
-                Periodo Académico
+                {t.periodLabel}
               </label>
               <select
                 id="select-periodo"
-                value={periodo}
-                onChange={(e) => onPeriodoChange(e.target.value)}
+                value={period}
+                onChange={(e) => onPeriodChange(e.target.value)}
                 className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
               >
                 <option value="2025-1">2025-1 (Actual)</option>
@@ -95,20 +112,22 @@ export function FilterBar({
             </div>
           </div>
 
-          {/* Item 4: Selector de Semestre */}
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 transition-all min-w-0">
-            <Layers className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div className="flex flex-col min-w-0 w-full">
+          <div 
+            onClick={() => document.getElementById('select-semestre')?.focus()}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+          >
+            <Layers className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
+            <div className="flex flex-col min-w-0 w-full cursor-pointer">
               <label htmlFor="select-semestre" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
-                Nivel / Semestre
+                {t.semesterLabel}
               </label>
               <select
                 id="select-semestre"
-                value={semestre}
-                onChange={(e) => onSemestreChange(e.target.value)}
+                value={semester}
+                onChange={(e) => onSemesterChange(e.target.value)}
                 className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
               >
-                <option value="Todos">Todos los Semestres (1-10)</option>
+                <option value="Todos">{t.allSemestersOption}</option>
                 <option value="Sem 1-2">Semestres 1 - 2 (Fundamentación)</option>
                 <option value="Sem 3-4">Semestres 3 - 4 (Básicas Ing.)</option>
                 <option value="Sem 5-6">Semestres 5 - 6 (Profesional)</option>

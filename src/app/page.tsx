@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
 import { getDashboardData } from '@/data/dashboardMockData';
+import i18n from '@/i18n/es.json';
 
-// Tab View Components
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
 import { FacultyTab } from '@/components/tabs/faculty-tab';
 import { ResearchTab } from '@/components/tabs/research-tab';
@@ -13,7 +13,6 @@ import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
 import { GraduatesTab } from '@/components/tabs/graduates-tab';
 
 import {
-  GraduationCap,
   Award,
   Microscope,
   Globe,
@@ -21,255 +20,420 @@ import {
   Printer,
   X,
   FileCheck,
-  CheckCircle2
+  CheckCircle2,
+  BookOpen,
+  Loader2
 } from 'lucide-react';
 
+type TabType = 'academic' | 'faculty' | 'research' | 'externalRelations' | 'graduates';
+
 export default function DashboardPage() {
-  // Estado de Filtros
-  const [facultad] = useState('Facultad de Ingeniería y Tecnologías');
-  const [programa, setPrograma] = useState('Ingeniería de Sistemas');
-  const [periodo, setPeriodo] = useState('2025-1');
-  const [semestre, setSemestre] = useState('Todos');
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Estado de Pestañas
-  const [activeTab, setActiveTab] = useState<'academico' | 'docentes' | 'investigacion' | 'relaciones' | 'egresados'>('academico');
+  const [faculty] = useState('Facultad de Ingeniería y Tecnologías');
+  const [program, setProgram] = useState('Ingeniería de Sistemas');
+  const [period, setPeriod] = useState('2025-1');
+  const [semester, setSemester] = useState('Todos');
 
-  // Estado del Modal de Reporte
+  const [activeTab, setActiveTab] = useState<TabType>('academic');
+
+  const [isTabLoading, setIsTabLoading] = useState(false);
+
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isModalClosing, setIsModalClosing] = useState(false);
 
-  // Obtención dinámica de datos mock
-  const data = useMemo(() => {
-    return getDashboardData(programa, periodo);
-  }, [programa, periodo]);
-
-  // Manejo de actualización manual
-  const handleRefresh = () => {
-    // Simular refresco
+  const handleOpenReportModal = () => {
+    setIsModalClosing(false);
+    setShowReportModal(true);
   };
 
+  const handleCloseReportModal = () => {
+    setIsModalClosing(true);
+    setTimeout(() => {
+      setShowReportModal(false);
+      setIsModalClosing(false);
+    }, 240);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (showReportModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showReportModal]);
+
+  const handleTabChange = (newTab: TabType) => {
+    if (newTab === activeTab) return;
+    setIsTabLoading(true);
+    setActiveTab(newTab);
+    setTimeout(() => {
+      setIsTabLoading(false);
+    }, 420);
+  };
+
+  const handleProgramChange = (val: string) => {
+    setIsTabLoading(true);
+    setProgram(val);
+    setTimeout(() => setIsTabLoading(false), 350);
+  };
+
+  const handlePeriodChange = (val: string) => {
+    setIsTabLoading(true);
+    setPeriod(val);
+    setTimeout(() => setIsTabLoading(false), 350);
+  };
+
+  const handleSemesterChange = (val: string) => {
+    setIsTabLoading(true);
+    setSemester(val);
+    setTimeout(() => setIsTabLoading(false), 350);
+  };
+
+  const handleResetFilters = () => {
+    setIsTabLoading(true);
+    setProgram('Ingeniería de Sistemas');
+    setPeriod('2025-1');
+    setSemester('Todos');
+    setTimeout(() => setIsTabLoading(false), 350);
+  };
+
+  const data = useMemo(() => {
+    return getDashboardData(program, period);
+  }, [program, period]);
+
+  const handleRefresh = () => {
+    setIsTabLoading(true);
+    setTimeout(() => setIsTabLoading(false), 450);
+  };
+
+  if (isInitialLoading) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-6 space-y-5">
+        <div className="relative p-1 rounded-full bg-gradient-to-tr from-[#67a623] via-[#8ecb4b] to-[#548a1a] shadow-xl shadow-[#67a623]/25 animate-pulse">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-loading.png"
+            alt={i18n.navbar.logoAlt}
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover bg-white p-0.5 border border-white/50"
+          />
+        </div>
+
+        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
+          <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
+          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
+            {i18n.initialLoader.title}
+          </span>
+        </div>
+
+        <div className="text-center space-y-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+            {i18n.initialLoader.faculty}
+          </p>
+          <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
+            {i18n.initialLoader.status}
+          </p>
+        </div>
+
+        <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
+          <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-16">
+    <div className="min-h-screen bg-slate-100/90 dark:bg-slate-950 pb-16">
       
-      {/* Header / Navigation Bar */}
       <Navbar
-        onExportReport={() => setShowReportModal(true)}
+        onExportReport={handleOpenReportModal}
         onRefresh={handleRefresh}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         
-        {/* Banner Informativo del Programa Seleccionado */}
-        <div className="mb-6 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white shadow-xl relative overflow-hidden border border-emerald-900/40">
-          <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="mb-6 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-[#152708] to-slate-900 text-white shadow-xl relative overflow-hidden border border-[#355516]/60">
+          <div className="absolute right-0 top-0 w-96 h-96 bg-[#67a623]/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full">
-                  SNIES: {data.programaInfo.codigoSnies}
+                <span 
+                  className="px-3 py-1 text-xs font-bold bg-[#67a623]/20 text-[#afdd7a] border border-[#67a623]/40 rounded-full cursor-help"
+                  title={`Código SNIES Oficial: ${data.programInfo.sniesCode}`}
+                >
+                  SNIES: {data.programInfo.sniesCode}
                 </span>
-                <span className="px-3 py-1 text-xs font-bold bg-teal-500/20 text-teal-300 border border-teal-400/30 rounded-full">
-                  {data.programaInfo.acreditacion}
+                <span 
+                  className="px-3 py-1 text-xs font-bold bg-[#548a1a]/25 text-[#ceeaad] border border-[#548a1a]/40 rounded-full cursor-help"
+                  title={`Acreditación: ${data.programInfo.accreditation}`}
+                >
+                  {data.programInfo.accreditation}
                 </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-                {data.programaInfo.nombre}
+              <h2 
+                className="text-2xl md:text-3xl font-black tracking-tight truncate cursor-help"
+                title={data.programInfo.name}
+              >
+                {data.programInfo.name}
               </h2>
               <p className="text-xs md:text-sm text-slate-300 mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span>Director(a): <strong>{data.programaInfo.director}</strong></span>
+                <span title={`${i18n.banner.directorLabel}: ${data.programInfo.director}`}>{i18n.banner.directorLabel}: <strong>{data.programInfo.director}</strong></span>
                 <span className="hidden sm:inline">•</span>
-                <span>Modalidad {data.programaInfo.modalidad} ({data.programaInfo.duracionSemestres} Semestres)</span>
+                <span title={`${i18n.banner.modalityLabel} ${data.programInfo.modality} con duración de ${data.programInfo.durationSemesters} semestres`}>{i18n.banner.modalityLabel} {data.programInfo.modality} ({data.programInfo.durationSemesters} {i18n.banner.semestersLabel})</span>
               </p>
             </div>
 
             <div className="flex items-center gap-3 self-start md:self-center shrink-0">
               <div className="text-right hidden lg:block">
-                <span className="text-[11px] uppercase font-bold text-slate-400">Estado CNA</span>
-                <p className="text-xs font-semibold text-emerald-400 flex items-center justify-end gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Autoevaluación al Día
+                <span className="text-[11px] uppercase font-bold text-slate-400">{i18n.banner.cnaStatusTitle}</span>
+                <p className="text-xs font-semibold text-[#afdd7a] flex items-center justify-end gap-1" title={i18n.banner.cnaStatusTooltip}>
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {i18n.banner.cnaStatusValue}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Global Filter Control Bar */}
         <FilterBar
-          facultad={facultad}
-          programa={programa}
-          periodo={periodo}
-          semestre={semestre}
-          onProgramaChange={setPrograma}
-          onPeriodoChange={setPeriodo}
-          onSemestreChange={setSemestre}
+          faculty={faculty}
+          program={program}
+          period={period}
+          semester={semester}
+          onProgramChange={handleProgramChange}
+          onPeriodChange={handlePeriodChange}
+          onSemesterChange={handleSemesterChange}
+          onResetFilters={handleResetFilters}
         />
 
-        {/* Tabs Navigation Bar con estilo verde esmeralda */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
           
           <button
-            onClick={() => setActiveTab('academico')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'academico'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            onClick={() => handleTabChange('academic')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'academic'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
             }`}
           >
-            <GraduationCap className="w-4 h-4" />
-            Rendimiento Académico & Estudiantes
+            <BookOpen className="w-4 h-4" />
+            {i18n.tabs.academic}
           </button>
 
           <button
-            onClick={() => setActiveTab('docentes')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'docentes'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            onClick={() => handleTabChange('faculty')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'faculty'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
             }`}
           >
             <Award className="w-4 h-4" />
-            Cuerpo Docente & Formación ({data.docentes.total})
+            {i18n.tabs.faculty} ({data.faculty.total})
           </button>
 
           <button
-            onClick={() => setActiveTab('investigacion')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'investigacion'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            onClick={() => handleTabChange('research')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'research'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
             }`}
           >
             <Microscope className="w-4 h-4" />
-            Investigación e Innovación ({data.investigacion.grupos.length} Grupos)
+            {i18n.tabs.research} ({data.research.groups.length})
           </button>
 
           <button
-            onClick={() => setActiveTab('relaciones')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'relaciones'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            onClick={() => handleTabChange('externalRelations')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'externalRelations'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
             }`}
           >
             <Globe className="w-4 h-4" />
-            Relaciones Externas & Convenios ({data.relacionesExternas.conveniosNacionales + data.relacionesExternas.conveniosInternacionales})
+            {i18n.tabs.externalRelations} ({data.externalRelations.nationalAgreements + data.externalRelations.internationalAgreements})
           </button>
 
           <button
-            onClick={() => setActiveTab('egresados')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'egresados'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            onClick={() => handleTabChange('graduates')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'graduates'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
             }`}
           >
             <Briefcase className="w-4 h-4" />
-            Impacto de Egresados ({data.egresados.tasaVinculacionLaboral})
+            {i18n.tabs.graduates} ({data.graduates.employmentRate})
           </button>
 
         </div>
 
-        {/* Tab Content Display */}
-        <div className="transition-all duration-300">
-          {activeTab === 'academico' && (
-            <AcademicPerformanceTab data={data} semestreFiltro={semestre} />
-          )}
+        {isTabLoading ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-28 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-5 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
+                  <div className="h-4 w-28 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
+                  <div className="h-8 w-20 bg-slate-300/80 dark:bg-slate-700/80 rounded-lg" />
+                  <div className="h-3 w-36 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
+                </div>
+              ))}
+            </div>
 
-          {activeTab === 'docentes' && (
-            <FacultyTab data={data} />
-          )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="h-80 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-6 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
+                <div className="h-5 w-48 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
+                <div className="h-52 w-full bg-slate-300/50 dark:bg-slate-700/50 rounded-xl" />
+              </div>
+              <div className="h-80 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-6 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
+                <div className="h-5 w-48 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
+                <div className="h-52 w-full bg-slate-300/50 dark:bg-slate-700/50 rounded-xl" />
+              </div>
+            </div>
 
-          {activeTab === 'investigacion' && (
-            <ResearchTab data={data} />
-          )}
+            <div className="flex items-center justify-center gap-2 py-4 text-xs font-bold text-[#406a16] dark:text-[#afdd7a]">
+              <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
+              <span>{i18n.tabLoader.status}</span>
+            </div>
+          </div>
+        ) : (
+          <div key={activeTab} className="animate-tab-fade">
+            {activeTab === 'academic' && (
+              <AcademicPerformanceTab data={data} semesterFilter={semester} />
+            )}
 
-          {activeTab === 'relaciones' && (
-            <ExternalRelationsTab data={data} />
-          )}
+            {activeTab === 'faculty' && (
+              <FacultyTab data={data} />
+            )}
 
-          {activeTab === 'egresados' && (
-            <GraduatesTab data={data} />
-          )}
-        </div>
+            {activeTab === 'research' && (
+              <ResearchTab data={data} />
+            )}
+
+            {activeTab === 'externalRelations' && (
+              <ExternalRelationsTab data={data} />
+            )}
+
+            {activeTab === 'graduates' && (
+              <GraduatesTab data={data} />
+            )}
+          </div>
+        )}
 
       </main>
 
-      {/* Modal de Informe de Autoevaluación CNA */}
       {showReportModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+        <div
+          id="printable-modal-backdrop"
+          onClick={handleCloseReportModal}
+          className={`fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 ${
+            isModalClosing ? 'animate-backdrop-out' : 'animate-backdrop-in'
+          }`}
+        >
+          <div
+            id="printable-report"
+            onClick={(e) => e.stopPropagation()}
+            className={`bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 ${
+              isModalClosing ? 'animate-modal-out' : 'animate-modal-in'
+            }`}
+          >
             
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://www.unicesar.edu.co/wp-content/uploads/2026/08/Logo-Unicesar-2026.webp"
+                  alt="Unicesar"
+                  className="h-10 w-auto object-contain hidden print:block"
+                />
+                <div className="p-2.5 bg-[#f4faec] dark:bg-[#152708] text-[#67a623] rounded-xl print:hidden">
                   <FileCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    Resumen de Autoevaluación CNA
+                  <h3 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white print:text-black">
+                    {i18n.reportModal.title}
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    {data.programaInfo.nombre} — Periodo {periodo}
+                  <p className="text-xs text-slate-500 print:text-slate-700 font-medium">
+                    {data.programInfo.name} — SNIES {data.programInfo.sniesCode} — Periodo {period}
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => setShowReportModal(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl"
+                onClick={handleCloseReportModal}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl print:hidden"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Document Content */}
-            <div className="space-y-4 text-sm text-slate-700 dark:text-slate-300">
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2 uppercase text-xs tracking-wider">
-                  1. Indicadores de Estudiantes y Permanencia
+            <div className="space-y-3.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 print:text-black print:space-y-2">
+              <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 print:bg-slate-50 rounded-2xl border border-slate-200 dark:border-slate-700 print:border-slate-300 print-no-break">
+                <h4 className="font-bold text-slate-900 dark:text-white print:text-black mb-1.5 uppercase text-xs tracking-wider">
+                  {i18n.reportModal.section1Title}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  <div>{i18n.reportModal.matrículaLabel} <strong>{data.students.totalEnrolled} alumnos</strong></div>
+                  <div>{i18n.reportModal.newLabel} <strong>{data.students.newStudents} estudiantes</strong></div>
+                  <div>{i18n.reportModal.approvalLabel} <strong className="text-[#67a623] print:text-black">{data.students.approvalRate}</strong></div>
+                  <div>{i18n.reportModal.dropoutLabel} <strong>{data.students.dropoutRate}</strong></div>
+                  <div>{i18n.reportModal.avgGraduationLabel} <strong>{data.students.averageGraduationSemesters} Semestres</strong></div>
+                  <div>{i18n.reportModal.metaGraduationLabel} <strong>{data.students.targetGraduationSemesters} Semestres</strong></div>
+                </div>
+              </div>
+
+              <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 print:bg-slate-50 rounded-2xl border border-slate-200 dark:border-slate-700 print:border-slate-300 print-no-break">
+                <h4 className="font-bold text-slate-900 dark:text-white print:text-black mb-1.5 uppercase text-xs tracking-wider">
+                  {i18n.reportModal.section2Title}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  <div>{i18n.reportModal.totalFacultyLabel} <strong>{data.faculty.total} profesores</strong></div>
+                  <div>{i18n.reportModal.fullTimeLabel} <strong>{data.faculty.fullTime} docentes</strong></div>
+                  <div>{i18n.reportModal.phdPercentLabel} <strong className="text-[#67a623] print:text-black">{data.faculty.educationLevel.find(n => n.nivel === 'Doctorado')?.porcentaje}%</strong></div>
+                </div>
+              </div>
+
+              <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 print:bg-slate-50 rounded-2xl border border-slate-200 dark:border-slate-800 print:border-slate-300 print-no-break">
+                <h4 className="font-bold text-slate-900 dark:text-white print:text-black mb-1.5 uppercase text-xs tracking-wider">
+                  {i18n.reportModal.section3Title}
                 </h4>
                 <ul className="space-y-1 text-xs">
-                  <li>• <strong>Matrícula Total:</strong> {data.estudiantes.matriculadosActual} estudiantes ({data.estudiantes.nuevos} nuevos).</li>
-                  <li>• <strong>Tasa de Aprobación:</strong> {data.estudiantes.tasaAprobacion}</li>
-                  <li>• <strong>Tasa de Deserción:</strong> {data.estudiantes.tasaDesercionActual} (Estrategias de acompañamiento activas).</li>
+                  <li>• <strong>{i18n.reportModal.mincienciasLabel}</strong> {data.research.groups.map(g => `${g.nombre} (Cat. ${g.categoria})`).join(', ')}.</li>
+                  <li>• <strong>{i18n.reportModal.indexedLabel}</strong> {data.research.scopusIndexed} artículos en Scopus / Web of Science.</li>
+                  <li>• <strong>{i18n.reportModal.agreementsLabel}</strong> {data.externalRelations.nationalAgreements} Nacionales y {data.externalRelations.internationalAgreements} Internacionales.</li>
+                  <li>• <strong>{i18n.reportModal.employabilityLabel}</strong> {data.graduates.employmentRate} con tiempo promedio de enganche de {data.graduates.timeToEmploymentMonths} meses.</li>
                 </ul>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2 uppercase text-xs tracking-wider">
-                  2. Cuerpo Docente y Calidad Formativa
-                </h4>
-                <ul className="space-y-1 text-xs">
-                  <li>• <strong>Total Profesores:</strong> {data.docentes.total} ({data.docentes.tiempoCompleto} Tiempo Completo).</li>
-                  <li>• <strong>Porcentaje con Doctorado (Ph.D.):</strong> {data.docentes.nivelFormacion.find(n => n.nivel === 'Doctorado')?.porcentaje}%</li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2 uppercase text-xs tracking-wider">
-                  3. Investigación, Convenios y Egresados
-                </h4>
-                <ul className="space-y-1 text-xs">
-                  <li>• <strong>Grupos MinCiencias:</strong> {data.investigacion.grupos.map(g => `${g.nombre} (${g.categoria})`).join(', ')}.</li>
-                  <li>• <strong>Publicaciones Scopus:</strong> {data.investigacion.scopusIndexed} artículos indexados.</li>
-                  <li>• <strong>Convenios Activos:</strong> {data.relacionesExternas.conveniosNacionales} Nacionales / {data.relacionesExternas.conveniosInternacionales} Internacionales.</li>
-                  <li>• <strong>Vinculación Laboral Egresados:</strong> {data.egresados.tasaVinculacionLaboral} empleabilidad.</li>
-                </ul>
+              <div className="pt-2 text-[10px] text-slate-400 print:text-slate-600 flex justify-between items-center print-no-break border-t border-slate-200 dark:border-slate-800 print:border-slate-300 mt-2">
+                <span>{i18n.reportModal.generatedBy}</span>
+                <span>Director(a): {data.programInfo.director}</span>
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 print:hidden">
               <button
-                onClick={() => setShowReportModal(false)}
+                onClick={handleCloseReportModal}
                 className="px-5 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
               >
-                Cerrar
+                {i18n.reportModal.closeButton}
               </button>
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#67a623] hover:bg-[#548a1a] text-white font-bold text-xs rounded-xl shadow-md transition-all"
               >
                 <Printer className="w-4 h-4" />
-                Imprimir / Guardar PDF
+                {i18n.reportModal.printButton}
               </button>
             </div>
 
