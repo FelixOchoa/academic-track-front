@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DashboardData } from '@/data/dashboardMockData';
 import { Briefcase, DollarSign, Clock, ThumbsUp, MapPin } from 'lucide-react';
+import i18n from '@/i18n/es.json';
 import {
   ResponsiveContainer,
   PieChart,
@@ -21,90 +22,88 @@ interface TabProps {
   data: DashboardData;
 }
 
-const COLORS = ['#10b981', '#059669', '#34d399', '#047857', '#64748b'];
+const COLORS = ['#67a623', '#548a1a', '#8ecb4b', '#406a16', '#64748b'];
 
 const compactTooltipStyle = {
-  backgroundColor: '#022c22',
-  borderColor: '#059669',
+  backgroundColor: '#152708',
+  borderColor: '#67a623',
   borderRadius: '10px',
-  color: '#ffffff',
   fontSize: '11px',
   padding: '6px 10px',
-  boxShadow: '0 10px 20px -3px rgba(0, 0, 0, 0.4)'
+  boxShadow: '0 10px 20px -3px rgba(0, 0, 0, 0.4)',
+  color: '#ffffff'
 };
 
 const compactItemStyle = {
   fontSize: '11px',
-  color: '#ecfdf5',
-  padding: '1px 0'
+  padding: '1px 0',
+  color: '#ffffff'
 };
 
 const compactLabelStyle = {
   fontSize: '11px',
   fontWeight: 700,
-  color: '#a7f3d0',
+  color: '#afdd7a',
   marginBottom: '2px'
 };
 
 export function GraduatesTab({ data }: TabProps) {
-  const { egresados } = data;
+  const t = i18n.graduatesTab;
+  const { graduates } = data;
 
   return (
     <div className="space-y-6">
       
-      {/* Top Metrics con línea visual verde (Emerald / Teal) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-500/10">
-          <div className="flex items-center justify-between text-emerald-100 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Vinculación Laboral</span>
-            <Briefcase className="w-5 h-5 text-emerald-200" />
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[#7ece28] via-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20">
+          <div className="flex items-center justify-between text-white/90 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">{t.kpi.employmentRate}</span>
+            <Briefcase className="w-5 h-5 text-white/90" />
           </div>
-          <p className="text-3xl font-black">{egresados.tasaVinculacionLaboral}</p>
-          <p className="text-xs text-emerald-100 mt-1">Egresados vinculados laboralmente</p>
+          <p className="text-3xl font-black">{graduates.employmentRate}</p>
+          <p className="text-xs text-white/90 mt-1">{t.kpi.employmentNote}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-md shadow-emerald-500/10">
-          <div className="flex items-center justify-between text-emerald-100 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Tiempo de Enganche</span>
-            <Clock className="w-5 h-5 text-emerald-200" />
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20">
+          <div className="flex items-center justify-between text-white/90 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">{t.kpi.timeToEmployment}</span>
+            <Clock className="w-5 h-5 text-white/90" />
           </div>
-          <p className="text-3xl font-extrabold">{egresados.tiempoPromedioEmpleoMeses} meses</p>
-          <p className="text-xs text-emerald-100 font-medium mt-1">Promedio posterior a graduación</p>
+          <p className="text-3xl font-extrabold">{graduates.timeToEmploymentMonths} meses</p>
+          <p className="text-xs text-white/90 font-medium mt-1">{t.kpi.timeNote}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-800 text-white shadow-md shadow-emerald-500/10">
-          <div className="flex items-center justify-between text-emerald-100 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Ingreso Promedio</span>
-            <DollarSign className="w-5 h-5 text-emerald-200" />
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[#77be24] to-[#58921c] text-white shadow-md shadow-[#67a623]/20">
+          <div className="flex items-center justify-between text-white/90 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">{t.kpi.averageIncome}</span>
+            <DollarSign className="w-5 h-5 text-white/90" />
           </div>
-          <p className="text-3xl font-extrabold">{egresados.salarioPromedioSMLV} SMLV</p>
-          <p className="text-xs text-emerald-100 mt-1">Salarios competitivos del sector</p>
+          <p className="text-3xl font-extrabold">{graduates.averageIncomeSMLV} SMLV</p>
+          <p className="text-xs text-white/90 mt-1">{t.kpi.incomeNote}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 text-white shadow-md shadow-emerald-500/10">
-          <div className="flex items-center justify-between text-emerald-100 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Satisfacción Empleadores</span>
-            <ThumbsUp className="w-5 h-5 text-emerald-200" />
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[#80d429] via-[#67a623] to-[#4e8218] text-white shadow-md shadow-[#67a623]/20">
+          <div className="flex items-center justify-between text-white/90 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">{t.kpi.employerSatisfaction}</span>
+            <ThumbsUp className="w-5 h-5 text-white/90" />
           </div>
-          <p className="text-3xl font-extrabold">{egresados.satisfaccionEmpleadores}</p>
-          <p className="text-xs text-emerald-100 font-medium mt-1">Valoración positiva del desempeño</p>
+          <p className="text-3xl font-extrabold">{graduates.employerSatisfaction}</p>
+          <p className="text-xs text-white/90 font-medium mt-1">{t.kpi.satisfactionNote}</p>
         </div>
 
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Pie: Sectores de Desempeño */}
         <Card>
           <CardHeader>
             <CardTitle>
-              <Briefcase className="w-5 h-5 text-emerald-600" />
-              Sectores de Desempeño Laboral
+              <Briefcase className="w-5 h-5 text-[#67a623]" />
+              {t.charts.sectorsTitle}
             </CardTitle>
             <CardDescription>
-              Distribución de egresados por ámbito industrial y económico
+              {t.charts.sectorsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -112,7 +111,7 @@ export function GraduatesTab({ data }: TabProps) {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={egresados.sectoresDesempeno}
+                    data={graduates.performanceSectors}
                     cx="50%"
                     cy="50%"
                     innerRadius={55}
@@ -121,8 +120,9 @@ export function GraduatesTab({ data }: TabProps) {
                     dataKey="porcentaje"
                     nameKey="sector"
                     label={({ sector, porcentaje }) => `${sector}: ${porcentaje}%`}
+                    labelLine={false}
                   >
-                    {egresados.sectoresDesempeno.map((entry, index) => (
+                    {graduates.performanceSectors.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -137,21 +137,20 @@ export function GraduatesTab({ data }: TabProps) {
           </CardContent>
         </Card>
 
-        {/* Bar: Ubicación Geográfica */}
         <Card>
           <CardHeader>
             <CardTitle>
-              <MapPin className="w-5 h-5 text-emerald-600" />
-              Ubicación del Ejercicio Profesional
+              <MapPin className="w-5 h-5 text-[#67a623]" />
+              {t.charts.locationTitle}
             </CardTitle>
             <CardDescription>
-              Inserción en el mercado local, nacional e internacional (remoto/presencial)
+              {t.charts.locationDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={egresados.ubicacionLaboral} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <BarChart data={graduates.locationDistribution} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="region" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} unit="%" />
@@ -160,7 +159,7 @@ export function GraduatesTab({ data }: TabProps) {
                     itemStyle={compactItemStyle}
                     labelStyle={compactLabelStyle}
                   />
-                  <Bar dataKey="porcentaje" name="% Egresados" fill="#10b981" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="porcentaje" name={t.charts.graduatesPercentKey} fill="#67a623" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

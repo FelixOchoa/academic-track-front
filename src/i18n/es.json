@@ -1,0 +1,208 @@
+{
+  "navbar": {
+    "cnaBadge": "Autoevaluación & CNA",
+    "accreditedBadge": "Sistema Acreditado",
+    "title": "Panel de Indicadores Académicos",
+    "subtitle": "Facultad de Ingeniería y Tecnologías",
+    "logoAlt": "Logo Universidad Popular del Cesar (Unicesar)",
+    "logoTitle": "Universidad Popular del Cesar (Unicesar)",
+    "refreshTooltip": "Actualizar Datos del Sistema",
+    "exportButton": "Exportar Informe",
+    "exportButtonMobile": "Exportar",
+    "exportTooltip": "Exportar Informe de Autoevaluación en PDF"
+  },
+  "initialLoader": {
+    "title": "Iniciando Panel de Indicadores Académicos...",
+    "faculty": "Facultad de Ingeniería y Tecnologías — Unicesar",
+    "status": "Procesando indicadores de autoevaluación y acreditación CNA"
+  },
+  "tabLoader": {
+    "status": "Procesando indicadores de autoevaluación..."
+  },
+  "banner": {
+    "directorLabel": "Director(a)",
+    "modalityLabel": "Modalidad",
+    "semestersLabel": "Semestres",
+    "cnaStatusTitle": "Estado CNA",
+    "cnaStatusValue": "Autoevaluación al Día",
+    "cnaStatusTooltip": "El programa cumple con los estándares de autoevaluación institucional del CNA"
+  },
+  "filters": {
+    "title": "Filtros Globales de Visualización",
+    "clearButton": "Limpiar Filtros",
+    "clearTooltip": "Restablecer todos los filtros a sus valores predeterminados",
+    "facultyLabel": "Facultad",
+    "programLabel": "Programa Académico",
+    "periodLabel": "Periodo Académico",
+    "semesterLabel": "Nivel / Semestre",
+    "allProgramsOption": "Todos los Programas (Consolidado)",
+    "allSemestersOption": "Todos los Semestres (1-10)"
+  },
+  "tabs": {
+    "academic": "Rendimiento Académico & Estudiantes",
+    "faculty": "Cuerpo Docente & Formación",
+    "research": "Investigación e Innovación",
+    "externalRelations": "Relaciones Externas & Convenios",
+    "graduates": "Impacto de Egresados"
+  },
+  "academicTab": {
+    "kpi": {
+      "totalEnrolment": "Matrícula Total",
+      "newStudents": "nuevos",
+      "inPeriod": "en este período",
+      "approvalRate": "Tasa de Aprobación",
+      "controlledReprobation": "Reprobación controlada:",
+      "dropoutRate": "Tasa de Deserción",
+      "dropoutNote": "Concentrada en 1er y 2do semestre (Fundamentación)",
+      "graduationTime": "Tiempo de Graduación",
+      "graduationMeta": "Meta curricular:"
+    },
+    "charts": {
+      "enrolmentTitle": "Evolución Histórica de Matrícula",
+      "enrolmentDesc": "Comportamiento de estudiantes matriculados y nuevos por período",
+      "enrolmentTotalKey": "Total Matriculados",
+      "enrolmentNewKey": "Estudiantes Nuevos",
+      "semesterBreakdownTitle": "Indicadores por Bloque de Semestres",
+      "semesterBreakdownDesc": "Comparativa de Aprobación vs Reprobación vs Deserción por semestre",
+      "approvalKey": "% Aprobación",
+      "reprobationKey": "% Reprobación",
+      "dropoutKey": "% Deserción"
+    },
+    "table": {
+      "title": "Detalle por Nivel Curricular (Matrícula y Alertas Académicas)",
+      "desc": "Desglose de población estudiantil e indicadores de permanencia",
+      "colLevel": "Nivel Curricular",
+      "colStudents": "Estudiantes",
+      "colApproval": "% Aprobación",
+      "colReprobation": "% Reprobación",
+      "colDropout": "% Deserción",
+      "colStatus": "Estado de Permanencia",
+      "statusHighRetention": "Normal / Retención Alta",
+      "statusEarlyAlert": "Alerta Temprana",
+      "statusMediumAttention": "Atención Media"
+    }
+  },
+  "facultyTab": {
+    "kpi": {
+      "totalFaculty": "Total Cuerpo Docente",
+      "fullTime": "Planta / Tiempo Completo",
+      "phdFaculty": "Docentes Ph.D. / Doctorado",
+      "cnaCompliance": "Cumple indicador de acreditación CNA",
+      "masterFaculty": "Docentes Maestría",
+      "advancedDegree": "Alto nivel de formación avanzada"
+    },
+    "charts": {
+      "educationTitle": "Nivel de Formación Académica",
+      "educationDesc": "Distribución por máximo grado académico alcanzado por los profesores",
+      "hiringTitle": "Modalidad de Vinculación Docente",
+      "hiringDesc": "Proporción de docentes de planta vs ocasionales y de cátedra",
+      "hiringQuantityKey": "Cantidad de Docentes"
+    },
+    "featured": {
+      "title": "Cuerpo Docente Destacado e Investigación",
+      "desc": "Profesores con publicaciones científicas y proyectos activos en la facultad",
+      "areaPrefix": "Área:",
+      "articlesSuffix": "Artículos",
+      "publicationsLabel": "Publicaciones"
+    }
+  },
+  "researchTab": {
+    "kpi": {
+      "groups": "Grupos MinCiencias",
+      "publications": "Publicaciones",
+      "scopusIndexed": "en Scopus / WoS",
+      "innovations": "Innovaciones",
+      "innovationsNote": "Prototipos industriales y software",
+      "patents": "Patentes Registradas",
+      "patentsNote": "Protección de propiedad intelectual"
+    },
+    "groupsSection": {
+      "title": "Grupos de Investigación Reconocidos por MinCiencias",
+      "desc": "Categorización institucional y producción científica asociada",
+      "categoryPrefix": "Categoría",
+      "leaderPrefix": "Líder:",
+      "linesHeader": "Líneas de Investigación:",
+      "seedbedsSuffix": "Semilleros Activos",
+      "activeStatus": "Vigente 2025"
+    },
+    "charts": {
+      "historyTitle": "Histórico de Producción Científica (Artículos e Indexed Scopus)",
+      "historyDesc": "Evolución anual de artículos publicados en revistas indexadas internacionales y nacionales",
+      "scopusKey": "Indexadas Scopus / WoS (Q1-Q4)",
+      "nationalKey": "Revistas Nacionales Publindex",
+      "booksKey": "Libros / Capítulos de Libro"
+    },
+    "featured": {
+      "title": "Publicaciones Recientes de Impacto",
+      "desc": "Artículos científicos indexados en Scopus / Web of Science",
+      "journalPrefix": "Revista:",
+      "badgeText": "Indexada Scopus"
+    }
+  },
+  "externalRelationsTab": {
+    "kpi": {
+      "nationalAgreements": "Convenios Nacionales",
+      "nationalAgreementsNote": "Empresas e Instituciones Públicas",
+      "internationalAgreements": "Convenios Internacionales",
+      "internationalAgreementsNote": "Movilidad e investigación conjunta",
+      "extensionActivities": "Actividades de Extensión",
+      "extensionNote": "Proyección social regional"
+    },
+    "extensionSection": {
+      "title": "Actividades de Extensión y Proyección Social Registradas",
+      "desc": "Proyectos con impacto territorial en el Cesar y región Caribe",
+      "impactPrefix": "Impacto:",
+      "participantsSuffix": "Participantes",
+      "completedBadge": "Completado"
+    },
+    "agreementsTable": {
+      "title": "Convenios y Alianzas Estratégicas Destacadas",
+      "desc": "Acuerdos vigentes con universidades de prestigio y empresas del sector productivo",
+      "colInstitution": "Institución / Empresa",
+      "colCountry": "País",
+      "colType": "Tipo de Convenio",
+      "colStatus": "Estado"
+    }
+  },
+  "graduatesTab": {
+    "kpi": {
+      "employmentRate": "Vinculación Laboral",
+      "employmentNote": "Egresados vinculados laboralmente",
+      "timeToEmployment": "Tiempo de Enganche",
+      "timeNote": "Promedio posterior a graduación",
+      "averageIncome": "Ingreso Promedio",
+      "incomeNote": "Salarios competitivos del sector",
+      "employerSatisfaction": "Satisfacción Empleadores",
+      "satisfactionNote": "Valoración positiva del desempeño"
+    },
+    "charts": {
+      "sectorsTitle": "Sectores de Desempeño Laboral",
+      "sectorsDesc": "Distribución de egresados por ámbito industrial y económico",
+      "locationTitle": "Ubicación del Ejercicio Profesional",
+      "locationDesc": "Inserción en el mercado local, nacional e internacional (remoto/presencial)",
+      "graduatesPercentKey": "% Egresados"
+    }
+  },
+  "reportModal": {
+    "title": "INFORME EJECUTIVO DE AUTOEVALUACIÓN Y CALIDAD (CNA)",
+    "section1Title": "1. Indicadores de Estudiantes y Permanencia",
+    "section2Title": "2. Cuerpo Docente y Calidad Formativa",
+    "section3Title": "3. Investigación, Convenios y Egresados",
+    "matrículaLabel": "Matrícula Actual:",
+    "newLabel": "Nuevos en Periodo:",
+    "approvalLabel": "Tasa de Aprobación:",
+    "dropoutLabel": "Tasa de Deserción:",
+    "avgGraduationLabel": "Promedio Graduación:",
+    "metaGraduationLabel": "Meta Curricular:",
+    "totalFacultyLabel": "Total Docentes:",
+    "fullTimeLabel": "Planta / Tiempo Completo:",
+    "phdPercentLabel": "Porcentaje Ph.D. (Doctorado):",
+    "mincienciasLabel": "Grupos MinCiencias:",
+    "indexedLabel": "Publicaciones Indexadas:",
+    "agreementsLabel": "Convenios Activos:",
+    "employabilityLabel": "Empleabilidad Egresados:",
+    "generatedBy": "Generado por: Sistema Web de Seguimiento Académico FIT — Unicesar",
+    "closeButton": "Cerrar",
+    "printButton": "Imprimir / Guardar PDF"
+  }
+}
