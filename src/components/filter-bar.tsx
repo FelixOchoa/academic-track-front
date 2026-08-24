@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Filter, Layers, Calendar, BookOpen, Building2, RotateCcw } from 'lucide-react';
@@ -26,6 +26,21 @@ export function FilterBar({
   onResetFilters,
 }: FilterBarProps) {
   const t = i18n.filters;
+
+  const openSelectPicker = (selectId: string) => {
+    const el = document.getElementById(selectId) as HTMLSelectElement;
+    if (el) {
+      try {
+        if ('showPicker' in el && typeof el.showPicker === 'function') {
+          el.showPicker();
+        } else {
+          el.focus();
+        }
+      } catch {
+        el.focus();
+      }
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-sm mb-8">
@@ -67,19 +82,20 @@ export function FilterBar({
           </div>
 
           <div 
-            onClick={() => document.getElementById('select-programa')?.focus()}
-            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+            onClick={() => openSelectPicker('select-programa')}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
           >
             <BookOpen className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
-            <div className="flex flex-col min-w-0 w-full cursor-pointer">
-              <label htmlFor="select-programa" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
+            <div className="flex flex-col min-w-0 w-full pointer-events-none">
+              <label htmlFor="select-programa" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
                 {t.programLabel}
               </label>
               <select
                 id="select-programa"
                 value={program}
                 onChange={(e) => onProgramChange(e.target.value)}
-                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
                 title={program}
               >
                 <option value="Todos los Programas">{t.allProgramsOption}</option>
@@ -91,19 +107,20 @@ export function FilterBar({
           </div>
 
           <div 
-            onClick={() => document.getElementById('select-periodo')?.focus()}
-            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+            onClick={() => openSelectPicker('select-periodo')}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
           >
             <Calendar className="w-4 h-4 text-[#548a1a] shrink-0 pointer-events-none" />
-            <div className="flex flex-col min-w-0 w-full cursor-pointer">
-              <label htmlFor="select-periodo" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
+            <div className="flex flex-col min-w-0 w-full pointer-events-none">
+              <label htmlFor="select-periodo" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
                 {t.periodLabel}
               </label>
               <select
                 id="select-periodo"
                 value={period}
                 onChange={(e) => onPeriodChange(e.target.value)}
-                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
               >
                 <option value="2025-1">2025-1 (Actual)</option>
                 <option value="2024-2">2024-2</option>
@@ -113,19 +130,20 @@ export function FilterBar({
           </div>
 
           <div 
-            onClick={() => document.getElementById('select-semestre')?.focus()}
-            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623]"
+            onClick={() => openSelectPicker('select-semestre')}
+            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
           >
             <Layers className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
-            <div className="flex flex-col min-w-0 w-full cursor-pointer">
-              <label htmlFor="select-semestre" className="text-[10px] uppercase font-bold text-slate-400 leading-tight cursor-pointer">
+            <div className="flex flex-col min-w-0 w-full pointer-events-none">
+              <label htmlFor="select-semestre" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
                 {t.semesterLabel}
               </label>
               <select
                 id="select-semestre"
                 value={semester}
                 onChange={(e) => onSemesterChange(e.target.value)}
-                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
               >
                 <option value="Todos">{t.allSemestersOption}</option>
                 <option value="Sem 1-2">Semestres 1 - 2 (Fundamentación)</option>

@@ -67,7 +67,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [program, period]);
+  }, []);
 
   const handleOpenReportModal = () => {
     setIsModalClosing(false);
@@ -99,39 +99,42 @@ export default function DashboardPage() {
     setActiveTab(newTab);
     setTimeout(() => {
       setIsTabLoading(false);
-    }, 420);
+    }, 380);
   };
 
-  const handleProgramChange = (val: string) => {
+  const handleProgramChange = async (val: string) => {
     setIsTabLoading(true);
     setProgram(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    await loadData(val, period);
+    setIsTabLoading(false);
   };
 
-  const handlePeriodChange = (val: string) => {
+  const handlePeriodChange = async (val: string) => {
     setIsTabLoading(true);
     setPeriod(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    await loadData(program, val);
+    setIsTabLoading(false);
   };
 
   const handleSemesterChange = (val: string) => {
     setIsTabLoading(true);
     setSemester(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    setTimeout(() => setIsTabLoading(false), 250);
   };
 
-  const handleResetFilters = () => {
+  const handleResetFilters = async () => {
     setIsTabLoading(true);
     setProgram('Ingeniería de Sistemas');
     setPeriod('2025-1');
     setSemester('Todos');
-    setTimeout(() => setIsTabLoading(false), 350);
+    await loadData('Ingeniería de Sistemas', '2025-1');
+    setIsTabLoading(false);
   };
 
   const handleRefresh = async () => {
     setIsTabLoading(true);
     await loadData(program, period);
-    setTimeout(() => setIsTabLoading(false), 450);
+    setTimeout(() => setIsTabLoading(false), 350);
   };
 
   if (isInitialLoading || !data) {
