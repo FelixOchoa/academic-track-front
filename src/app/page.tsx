@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
-import { getDashboardData, DashboardData } from '@/data/dashboardMockData';
+import { DashboardData } from '@/types/dashboardTypes';
 import { fetchDashboardData } from '@/services/academicIndicatorsService';
 import i18n from '@/i18n/es.json';
 
@@ -23,7 +23,8 @@ import {
   FileCheck,
   CheckCircle2,
   BookOpen,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 
 type TabType = 'academic' | 'faculty' | 'research' | 'externalRelations' | 'graduates';
@@ -42,13 +43,24 @@ export default function DashboardPage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
 
-  const [data, setData] = useState<DashboardData>(() => getDashboardData(program, period));
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const loadData = async (selectedProgram: string, selectedPeriod: string) => {
+    try {
+      setFetchError(null);
+      const result = await fetchDashboardData(selectedProgram, selectedPeriod);
+      setData(result);
+    } catch (err: any) {
+      setFetchError(err.message || 'Error al conectar con la API del backend');
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
-    fetchDashboardData(program, period).then((result) => {
+    loadData(program, period).finally(() => {
       if (isMounted) {
-        setData(result);
+        setIsInitialLoading(false);
       }
     });
     return () => {
@@ -68,13 +80,6 @@ export default function DashboardPage() {
       setIsModalClosing(false);
     }, 240);
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (showReportModal) {
@@ -124,12 +129,11 @@ export default function DashboardPage() {
 
   const handleRefresh = async () => {
     setIsTabLoading(true);
-    const updated = await fetchDashboardData(program, period);
-    setData(updated);
+    await loadData(program, period);
     setTimeout(() => setIsTabLoading(false), 450);
   };
 
-  if (isInitialLoading) {
+  if (isInitialLoading || !data) {
     return (
       <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-6 space-y-5">
         <div className="relative p-1 rounded-full bg-gradient-to-tr from-[#67a623] via-[#8ecb4b] to-[#548a1a] shadow-xl shadow-[#67a623]/25 animate-pulse">
@@ -156,6 +160,13 @@ export default function DashboardPage() {
             {i18n.initialLoader.status}
           </p>
         </div>
+
+        {fetchError && (
+          <div className="max-w-md p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{fetchError}</span>
+          </div>
+        )}
 
         <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
           <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
