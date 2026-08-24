@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { DashboardData } from '@/data/dashboardMockData';
+import { DashboardData } from '@/types/dashboardTypes';
 import { Users, TrendingUp, AlertTriangle, CheckCircle, GraduationCap } from 'lucide-react';
 import i18n from '@/i18n/es.json';
 import {

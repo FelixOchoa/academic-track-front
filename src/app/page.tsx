@@ -1,9 +1,10 @@
-'use client';
+﻿'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
-import { getDashboardData } from '@/data/dashboardMockData';
+import { DashboardData } from '@/types/dashboardTypes';
+import { fetchDashboardData } from '@/services/academicIndicatorsService';
 import i18n from '@/i18n/es.json';
 
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
@@ -22,7 +23,9 @@ import {
   FileCheck,
   CheckCircle2,
   BookOpen,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 
 type TabType = 'academic' | 'faculty' | 'research' | 'externalRelations' | 'graduates';
@@ -36,11 +39,35 @@ export default function DashboardPage() {
   const [semester, setSemester] = useState('Todos');
 
   const [activeTab, setActiveTab] = useState<TabType>('academic');
-
   const [isTabLoading, setIsTabLoading] = useState(false);
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
+
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const loadData = async (selectedProgram: string, selectedPeriod: string) => {
+    try {
+      setFetchError(null);
+      const result = await fetchDashboardData(selectedProgram, selectedPeriod);
+      setData(result);
+    } catch (err: any) {
+      setFetchError(err.message || 'No se pudo conectar con el servidor backend');
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    loadData(program, period).finally(() => {
+      if (isMounted) {
+        setIsInitialLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenReportModal = () => {
     setIsModalClosing(false);
@@ -54,13 +81,6 @@ export default function DashboardPage() {
       setIsModalClosing(false);
     }, 240);
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (showReportModal) {
@@ -79,45 +99,45 @@ export default function DashboardPage() {
     setActiveTab(newTab);
     setTimeout(() => {
       setIsTabLoading(false);
-    }, 420);
+    }, 380);
   };
 
-  const handleProgramChange = (val: string) => {
+  const handleProgramChange = async (val: string) => {
     setIsTabLoading(true);
     setProgram(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    await loadData(val, period);
+    setIsTabLoading(false);
   };
 
-  const handlePeriodChange = (val: string) => {
+  const handlePeriodChange = async (val: string) => {
     setIsTabLoading(true);
     setPeriod(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    await loadData(program, val);
+    setIsTabLoading(false);
   };
 
   const handleSemesterChange = (val: string) => {
     setIsTabLoading(true);
     setSemester(val);
-    setTimeout(() => setIsTabLoading(false), 350);
+    setTimeout(() => setIsTabLoading(false), 250);
   };
 
-  const handleResetFilters = () => {
+  const handleResetFilters = async () => {
     setIsTabLoading(true);
     setProgram('Ingeniería de Sistemas');
     setPeriod('2025-1');
     setSemester('Todos');
+    await loadData('Ingeniería de Sistemas', '2025-1');
+    setIsTabLoading(false);
+  };
+
+  const handleRefresh = async () => {
+    setIsTabLoading(true);
+    await loadData(program, period);
     setTimeout(() => setIsTabLoading(false), 350);
   };
 
-  const data = useMemo(() => {
-    return getDashboardData(program, period);
-  }, [program, period]);
-
-  const handleRefresh = () => {
-    setIsTabLoading(true);
-    setTimeout(() => setIsTabLoading(false), 450);
-  };
-
-  if (isInitialLoading) {
+  if (isInitialLoading || !data) {
     return (
       <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-6 space-y-5">
         <div className="relative p-1 rounded-full bg-gradient-to-tr from-[#67a623] via-[#8ecb4b] to-[#548a1a] shadow-xl shadow-[#67a623]/25 animate-pulse">
@@ -129,25 +149,48 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
-          <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
-            {i18n.initialLoader.title}
-          </span>
-        </div>
+        {!fetchError ? (
+          <>
+            <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
+              <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
+              <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
+                {i18n.initialLoader.title}
+              </span>
+            </div>
 
-        <div className="text-center space-y-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-            {i18n.initialLoader.faculty}
-          </p>
-          <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
-            {i18n.initialLoader.status}
-          </p>
-        </div>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                {i18n.initialLoader.faculty}
+              </p>
+              <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
+                {i18n.initialLoader.status}
+              </p>
+            </div>
 
-        <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
-          <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
-        </div>
+            <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
+              <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-3.5 p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 rounded-3xl max-w-md text-center shadow-xl">
+            <div className="p-3 bg-rose-100 dark:bg-rose-900/50 rounded-2xl text-rose-600 dark:text-rose-300">
+              <AlertTriangle className="w-6 h-6 shrink-0" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm sm:text-base">No se pudo obtener la información</h3>
+              <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">
+                {fetchError}
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer mt-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Reintentar Conexión
+            </button>
+          </div>
+        )}
       </div>
     );
   }
