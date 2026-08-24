@@ -1,9 +1,10 @@
-'use client';
+﻿'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
-import { getDashboardData } from '@/data/dashboardMockData';
+import { getDashboardData, DashboardData } from '@/data/dashboardMockData';
+import { fetchDashboardData } from '@/services/academicIndicatorsService';
 import i18n from '@/i18n/es.json';
 
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
@@ -36,11 +37,24 @@ export default function DashboardPage() {
   const [semester, setSemester] = useState('Todos');
 
   const [activeTab, setActiveTab] = useState<TabType>('academic');
-
   const [isTabLoading, setIsTabLoading] = useState(false);
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
+
+  const [data, setData] = useState<DashboardData>(() => getDashboardData(program, period));
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchDashboardData(program, period).then((result) => {
+      if (isMounted) {
+        setData(result);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [program, period]);
 
   const handleOpenReportModal = () => {
     setIsModalClosing(false);
@@ -108,12 +122,10 @@ export default function DashboardPage() {
     setTimeout(() => setIsTabLoading(false), 350);
   };
 
-  const data = useMemo(() => {
-    return getDashboardData(program, period);
-  }, [program, period]);
-
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsTabLoading(true);
+    const updated = await fetchDashboardData(program, period);
+    setData(updated);
     setTimeout(() => setIsTabLoading(false), 450);
   };
 
