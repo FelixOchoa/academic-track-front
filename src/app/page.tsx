@@ -24,7 +24,8 @@ import {
   CheckCircle2,
   BookOpen,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 
 type TabType = 'academic' | 'faculty' | 'research' | 'externalRelations' | 'graduates';
@@ -52,7 +53,7 @@ export default function DashboardPage() {
       const result = await fetchDashboardData(selectedProgram, selectedPeriod);
       setData(result);
     } catch (err: any) {
-      setFetchError(err.message || 'Error al conectar con la API del backend');
+      setFetchError(err.message || 'No se pudo conectar con el servidor backend');
     }
   };
 
@@ -145,32 +146,48 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
-          <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
-            {i18n.initialLoader.title}
-          </span>
-        </div>
+        {!fetchError ? (
+          <>
+            <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
+              <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
+              <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
+                {i18n.initialLoader.title}
+              </span>
+            </div>
 
-        <div className="text-center space-y-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-            {i18n.initialLoader.faculty}
-          </p>
-          <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
-            {i18n.initialLoader.status}
-          </p>
-        </div>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                {i18n.initialLoader.faculty}
+              </p>
+              <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
+                {i18n.initialLoader.status}
+              </p>
+            </div>
 
-        {fetchError && (
-          <div className="max-w-md p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{fetchError}</span>
+            <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
+              <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-3.5 p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 rounded-3xl max-w-md text-center shadow-xl">
+            <div className="p-3 bg-rose-100 dark:bg-rose-900/50 rounded-2xl text-rose-600 dark:text-rose-300">
+              <AlertTriangle className="w-6 h-6 shrink-0" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm sm:text-base">No se pudo obtener la información</h3>
+              <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">
+                {fetchError}
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer mt-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Reintentar Conexión
+            </button>
           </div>
         )}
-
-        <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
-          <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
-        </div>
       </div>
     );
   }
