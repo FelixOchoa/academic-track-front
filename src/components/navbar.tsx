@@ -1,15 +1,17 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { ShieldCheck, Download, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, Download, RefreshCw, UploadCloud } from 'lucide-react';
 import i18n from '@/i18n/es.json';
 
 interface NavbarProps {
   onExportReport?: () => void;
   onRefresh?: () => void;
+  showUploadButton?: boolean;
 }
 
-export function Navbar({ onExportReport, onRefresh }: NavbarProps) {
+export function Navbar({ onExportReport, onRefresh, showUploadButton = true }: NavbarProps) {
   const t = i18n.navbar;
 
   return (
@@ -18,13 +20,15 @@ export function Navbar({ onExportReport, onRefresh }: NavbarProps) {
         <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
           
           <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1 h-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://www.unicesar.edu.co/wp-content/uploads/2026/08/Logo-Unicesar-2026.webp"
-              alt={t.logoAlt}
-              title={t.logoTitle}
-              className="h-full w-auto object-contain shrink-0 p-0 m-0 cursor-pointer"
-            />
+            <Link href="/" className="h-full flex items-center shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://www.unicesar.edu.co/wp-content/uploads/2026/08/Logo-Unicesar-2026.webp"
+                alt={t.logoAlt}
+                title={t.logoTitle}
+                className="h-full w-auto object-contain shrink-0 p-0 m-0 cursor-pointer"
+              />
+            </Link>
 
             <div className="min-w-0 flex flex-col justify-center py-1">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -67,15 +71,29 @@ export function Navbar({ onExportReport, onRefresh }: NavbarProps) {
               </button>
             )}
 
-            <button
-              onClick={onExportReport}
-              className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#67a623] to-[#548a1a] hover:from-[#548a1a] hover:to-[#406a16] text-white font-medium text-xs sm:text-sm rounded-xl shadow-sm hover:shadow-md hover:shadow-[#67a623]/20 transition-all duration-200 active:scale-95 shrink-0"
-              title={t.exportTooltip}
-            >
-              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="hidden sm:inline">{t.exportButton}</span>
-              <span className="sm:hidden">{t.exportButtonMobile}</span>
-            </button>
+            {showUploadButton && (
+              <Link
+                href="/upload"
+                className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-[#f4faec] dark:bg-slate-800 dark:hover:bg-[#152708] text-slate-800 dark:text-slate-100 hover:text-[#67a623] dark:hover:text-[#afdd7a] font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 transition-all duration-200 shrink-0"
+                title="Cargar y procesar nuevos datos de indicadores"
+              >
+                <UploadCloud className="w-4 h-4 text-[#67a623]" />
+                <span className="hidden sm:inline">Cargar Indicador</span>
+                <span className="sm:hidden">Cargar</span>
+              </Link>
+            )}
+
+            {onExportReport && (
+              <button
+                onClick={onExportReport}
+                className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-[#67a623] to-[#548a1a] hover:from-[#548a1a] hover:to-[#406a16] text-white font-medium text-xs sm:text-sm rounded-xl shadow-sm hover:shadow-md hover:shadow-[#67a623]/20 transition-all duration-200 active:scale-95 shrink-0"
+                title={t.exportTooltip}
+              >
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline">{t.exportButton}</span>
+                <span className="sm:hidden">{t.exportButtonMobile}</span>
+              </button>
+            )}
           </div>
 
         </div>

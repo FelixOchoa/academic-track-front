@@ -2,6 +2,16 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5282/api';
 
+export interface UploadResult {
+  success: boolean;
+  message: string;
+  indicatorType: string;
+  fileName: string;
+  fileSizeBytes: number;
+  processedAt: string;
+  processedRecords: number;
+}
+
 export async function fetchDashboardData(program: string, period: string): Promise<DashboardData> {
   const url = `${API_BASE_URL}/academic-indicators/dashboard?program=${encodeURIComponent(program)}&period=${encodeURIComponent(period)}`;
   
@@ -25,5 +35,39 @@ export async function fetchDashboardData(program: string, period: string): Promi
       throw error;
     }
     throw new Error('No se pudo establecer conexión con el servidor backend. Verifique que el servicio de la API esté en ejecución.');
+  }
+}
+
+export async function uploadIndicatorFile(
+  indicatorType: string,
+  program: string,
+  period: string,
+  file: File
+): Promise<UploadResult> {
+  const url = `${API_BASE_URL}/academic-indicators/upload`;
+  const formData = new FormData();
+  formData.append('indicatorType', indicatorType);
+  formData.append('program', program);
+  formData.append('period', period);
+  formData.append('file', file);
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error en el servidor (Código HTTP ${response.status})`);
+    }
+
+    const result: UploadResult = await response.json();
+    return result;
+  } catch (error: any) {
+    if (error.message && !error.message.includes('servidor')) {
+      throw new Error('Ocurrió un error al intentar subir el archivo al backend. Verifique que la API esté activa.');
+    }
+    throw error;
   }
 }

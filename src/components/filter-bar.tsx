@@ -9,6 +9,8 @@ interface FilterBarProps {
   program: string;
   period: string;
   semester: string;
+  activeTab?: string;
+  availablePeriods?: string[];
   onProgramChange: (val: string) => void;
   onPeriodChange: (val: string) => void;
   onSemesterChange: (val: string) => void;
@@ -20,6 +22,8 @@ export function FilterBar({
   program,
   period,
   semester,
+  activeTab = 'academic',
+  availablePeriods,
   onProgramChange,
   onPeriodChange,
   onSemesterChange,
@@ -29,7 +33,7 @@ export function FilterBar({
 
   const openSelectPicker = (selectId: string) => {
     const el = document.getElementById(selectId) as HTMLSelectElement;
-    if (el) {
+    if (el && !el.disabled) {
       try {
         if ('showPicker' in el && typeof el.showPicker === 'function') {
           el.showPicker();
@@ -41,6 +45,12 @@ export function FilterBar({
       }
     }
   };
+
+  const hasPeriods = availablePeriods && availablePeriods.length > 0;
+  const periodOptions = hasPeriods ? [...availablePeriods].reverse() : [];
+
+  // Hide Semester filter for Academic tab since SACES metrics are reported strictly by Academic Period (2018-1 to 2025-1)
+  const showSemesterFilter = activeTab !== 'academic';
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-sm mb-8">
@@ -64,8 +74,9 @@ export function FilterBar({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full lg:w-auto flex-1 min-w-0">
+        <div className={`grid grid-cols-1 ${showSemesterFilter ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'} gap-3 w-full lg:w-auto flex-1 min-w-0`}>
           
+          {/* Facultad Filter */}
           <div className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl min-w-0 cursor-default">
             <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
             <div className="flex flex-col min-w-0 w-full">
@@ -81,6 +92,7 @@ export function FilterBar({
             </div>
           </div>
 
+          {/* Programa Filter */}
           <div 
             onClick={() => openSelectPicker('select-programa')}
             className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
@@ -106,54 +118,69 @@ export function FilterBar({
             </div>
           </div>
 
+          {/* Periodo Académico Filter */}
           <div 
             onClick={() => openSelectPicker('select-periodo')}
-            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
+            className={`flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 select-none ${
+              hasPeriods ? 'cursor-pointer hover:border-[#67a623]' : 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-800/40'
+            }`}
           >
-            <Calendar className="w-4 h-4 text-[#548a1a] shrink-0 pointer-events-none" />
+            <Calendar className={`w-4 h-4 shrink-0 pointer-events-none ${hasPeriods ? 'text-[#548a1a]' : 'text-slate-400'}`} />
             <div className="flex flex-col min-w-0 w-full pointer-events-none">
               <label htmlFor="select-periodo" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
                 {t.periodLabel}
               </label>
               <select
                 id="select-periodo"
-                value={period}
+                value={hasPeriods ? period : ''}
+                disabled={!hasPeriods}
                 onChange={(e) => onPeriodChange(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
+                className={`text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none w-full truncate pr-1 pointer-events-auto ${
+                  hasPeriods ? 'cursor-pointer' : 'cursor-not-allowed text-slate-400 dark:text-slate-500'
+                }`}
               >
-                <option value="2025-1">2025-1 (Actual)</option>
-                <option value="2024-2">2024-2</option>
-                <option value="2024-1">2024-1</option>
+                {!hasPeriods ? (
+                  <option value="" disabled>Sin periodos cargados</option>
+                ) : (
+                  periodOptions.map((p, idx) => (
+                    <option key={p} value={p}>
+                      {p} {idx === 0 ? '(Actual)' : ''}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
 
-          <div 
-            onClick={() => openSelectPicker('select-semestre')}
-            className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
-          >
-            <Layers className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
-            <div className="flex flex-col min-w-0 w-full pointer-events-none">
-              <label htmlFor="select-semestre" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
-                {t.semesterLabel}
-              </label>
-              <select
-                id="select-semestre"
-                value={semester}
-                onChange={(e) => onSemesterChange(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
-              >
-                <option value="Todos">{t.allSemestersOption}</option>
-                <option value="Sem 1-2">Semestres 1 - 2 (Fundamentación)</option>
-                <option value="Sem 3-4">Semestres 3 - 4 (Básicas Ing.)</option>
-                <option value="Sem 5-6">Semestres 5 - 6 (Profesional)</option>
-                <option value="Sem 7-8">Semestres 7 - 8 (Avanzado)</option>
-                <option value="Sem 9-10">Semestres 9 - 10 (Grado/Prácticas)</option>
-              </select>
+          {/* Optional Nivel / Semestre Filter */}
+          {showSemesterFilter && (
+            <div 
+              onClick={() => openSelectPicker('select-semestre')}
+              className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
+            >
+              <Layers className="w-4 h-4 text-[#67a623] shrink-0 pointer-events-none" />
+              <div className="flex flex-col min-w-0 w-full pointer-events-none">
+                <label htmlFor="select-semestre" className="text-[10px] uppercase font-bold text-slate-400 leading-tight pointer-events-none">
+                  {t.semesterLabel}
+                </label>
+                <select
+                  id="select-semestre"
+                  value={semester}
+                  onChange={(e) => onSemesterChange(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs font-semibold text-slate-900 dark:text-white bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1 pointer-events-auto"
+                >
+                  <option value="Todos">{t.allSemestersOption}</option>
+                  <option value="Sem 1-2">Semestres 1 - 2 (Fundamentación)</option>
+                  <option value="Sem 3-4">Semestres 3 - 4 (Básicas Ing.)</option>
+                  <option value="Sem 5-6">Semestres 5 - 6 (Profesional)</option>
+                  <option value="Sem 7-8">Semestres 7 - 8 (Avanzado)</option>
+                  <option value="Sem 9-10">Semestres 9 - 10 (Grado/Prácticas)</option>
+                </select>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
