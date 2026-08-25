@@ -5,6 +5,13 @@ import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
 import { DashboardData } from '@/types/dashboardTypes';
 import { fetchDashboardData } from '@/services/academicIndicatorsService';
+import {
+  studentAlumniService,
+  Programa,
+  Periodo,
+} from '@/services/student-alumni.service';
+
+
 import i18n from '@/i18n/es.json';
 
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
@@ -12,11 +19,13 @@ import { FacultyTab } from '@/components/tabs/faculty-tab';
 import { ResearchTab } from '@/components/tabs/research-tab';
 import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
 import { GraduatesTab } from '@/components/tabs/graduates-tab';
+import { CohortAnalysisTab } from '@/components/tabs/cohort-analysis-tab';
 
 import {
   Award,
   Microscope,
   Globe,
+  Users,
   Briefcase,
   Printer,
   X,
@@ -28,16 +37,26 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-type TabType = 'academic' | 'faculty' | 'research' | 'externalRelations' | 'graduates';
+type TabType =
+  | 'academic'
+  | 'cohort'
+  | 'faculty'
+  | 'research'
+  | 'externalRelations'
+  | 'graduates';
 
 export default function DashboardPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const [faculty] = useState('Facultad de Ingeniería y Tecnologías');
-  const [program, setProgram] = useState('Ingeniería de Sistemas');
-  const [period, setPeriod] = useState('2025-1');
-  const [semester, setSemester] = useState('Todos');
+  const [program, setProgram] = useState('');
+const [period, setPeriod] = useState('');
+const [semester, setSemester] = useState('Todos');
 
+const [programaId, setProgramaId] = useState<number | null>(null);
+const [periodoCohorteId, setPeriodoCohorteId] = useState<number | null>(null);
+  const [programas, setProgramas] = useState<Programa[]>([]);
+  const [periodos, setPeriodos] = useState<Periodo[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('academic');
   const [isTabLoading, setIsTabLoading] = useState(false);
 
@@ -46,6 +65,58 @@ export default function DashboardPage() {
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+
+
+const obtenerValorPeriodo = (periodo: Periodo): string => {
+  return `${periodo.anio}-${periodo.semestre === 'I' ? '1' : '2'}`;
+};
+
+const obtenerUltimoAnioCompleto = (
+  periodosData: Periodo[]
+): number | null => {
+  const anios = [...new Set(periodosData.map((periodo) => periodo.anio))]
+    .sort((a, b) => b - a);
+
+  const ultimoAnioCompleto = anios.find((anio) => {
+    const tienePrimerSemestre = periodosData.some(
+      (periodo) =>
+        periodo.anio === anio &&
+        periodo.semestre === 'I'
+    );
+
+    const tieneSegundoSemestre = periodosData.some(
+      (periodo) =>
+        periodo.anio === anio &&
+        periodo.semestre === 'II'
+    );
+
+    return tienePrimerSemestre && tieneSegundoSemestre;
+  });
+
+  return ultimoAnioCompleto ?? null;
+};
+
+const obtenerPeriodoCohorteInicial = (
+  periodosData: Periodo[]
+): Periodo | null => {
+  const ultimoAnioCompleto =
+    obtenerUltimoAnioCompleto(periodosData);
+
+  if (ultimoAnioCompleto === null) {
+    return null;
+  }
+
+  return (
+    periodosData.find(
+      (periodo) =>
+        periodo.anio === ultimoAnioCompleto &&
+        periodo.semestre === 'I'
+    ) ?? null
+  );
+};
+
+
 
   const loadData = async (selectedProgram: string, selectedPeriod: string) => {
     try {
@@ -57,18 +128,99 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    loadData(program, period).finally(() => {
-      if (isMounted) {
-        setIsInitialLoading(false);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+useEffect(() => {
+  const loadInitialData = async () => {
+    try {
+      setFetchError(null);
 
+      const [programasData, periodosData] = await Promise.all([
+        studentAlumniService.obtenerProgramas(),
+        studentAlumniService.obtenerPeriodos(),
+      ]);
+
+      setProgramas(programasData);
+      setPeriodos(periodosData);
+
+      if (programasData.length === 0) {
+        throw new Error('No existen programas académicos registrados.');
+      }
+
+      if (periodosData.length === 0) {
+        throw new Error('No existen períodos académicos registrados.');
+      }
+
+      /*
+       * Seleccionamos automáticamente el primer programa
+       * disponible en la base de datos.
+       */
+     const programaInicial =
+        programasData.find(
+          (programa) => programa.nombre === 'Ingeniería de Sistemas'
+        ) ?? programasData[0];
+
+      setProgram(programaInicial.nombre);
+      setProgramaId(programaInicial.id);
+      /*
+       * Buscamos el último año que tenga los dos semestres:
+       *
+       * 2024-I  ✅
+       * 2024-II ✅
+       *
+       * 2025-I  ✅
+       * 2025-II ✅
+       *
+       * 2026-I  ✅
+       * 2026-II ❌
+       *
+       * Resultado: 2025
+       */
+      const periodoInicial =
+        obtenerPeriodoCohorteInicial(periodosData);
+
+      if (!periodoInicial) {
+        throw new Error(
+          'No existe ningún año académico completamente finalizado.'
+        );
+      }
+
+      const periodoInicialValue =
+        obtenerValorPeriodo(periodoInicial);
+
+      setPeriod(periodoInicialValue);
+
+      /*
+       * Este ID será utilizado por Análisis de Cohortes.
+       *
+       * Ejemplo:
+       * 2025-I → ID 3
+       */
+      setPeriodoCohorteId(periodoInicial.id);
+
+      /*
+       * Cargamos el dashboard usando exactamente
+       * los valores obtenidos de PostgreSQL.
+       */
+      await loadData(
+        programaInicial.nombre,
+        periodoInicialValue
+      );
+
+      setIsInitialLoading(false);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo inicializar el dashboard.';
+
+      setFetchError(message);
+      setIsInitialLoading(false);
+    }
+  };
+
+  void loadInitialData();
+}, []);
+
+  
   const handleOpenReportModal = () => {
     setIsModalClosing(false);
     setShowReportModal(true);
@@ -102,20 +254,53 @@ export default function DashboardPage() {
     }, 380);
   };
 
-  const handleProgramChange = async (val: string) => {
-    setIsTabLoading(true);
-    setProgram(val);
-    await loadData(val, period);
-    setIsTabLoading(false);
+    const handleProgramChange = async (val: string) => {
+    const programaSeleccionado = programas.find(
+      (item) => item.nombre === val
+    );
+
+    if (!programaSeleccionado) {
+      return;
+    }
+
+    try {
+      setIsTabLoading(true);
+
+      setProgram(programaSeleccionado.nombre);
+      setProgramaId(programaSeleccionado.id);
+
+      await loadData(
+        programaSeleccionado.nombre,
+        period
+      );
+    } finally {
+      setIsTabLoading(false);
+    }
   };
 
   const handlePeriodChange = async (val: string) => {
-    setIsTabLoading(true);
-    setPeriod(val);
-    await loadData(program, val);
-    setIsTabLoading(false);
+    const periodoSeleccionado = periodos.find(
+      (item) => obtenerValorPeriodo(item) === val
+    );
+
+    if (!periodoSeleccionado) {
+      return;
+    }
+
+    try {
+      setIsTabLoading(true);
+
+      setPeriod(val);
+      setPeriodoCohorteId(periodoSeleccionado.id);
+
+      await loadData(program, val);
+    } finally {
+      setIsTabLoading(false);
+    }
   };
 
+
+  
   const handleSemesterChange = (val: string) => {
     setIsTabLoading(true);
     setSemester(val);
@@ -123,13 +308,43 @@ export default function DashboardPage() {
   };
 
   const handleResetFilters = async () => {
+  if (programas.length === 0 || periodos.length === 0) {
+    return;
+  }
+
+  const programaInicial =
+  programas.find(
+    (programa) => programa.nombre === 'Ingeniería de Sistemas'
+  ) ?? programas[0];
+  const periodoInicial =
+    obtenerPeriodoCohorteInicial(periodos);
+
+  if (!periodoInicial) {
+    return;
+  }
+
+  const periodoInicialValue =
+    obtenerValorPeriodo(periodoInicial);
+
+  try {
     setIsTabLoading(true);
-    setProgram('Ingeniería de Sistemas');
-    setPeriod('2025-1');
+
+    setProgram(programaInicial.nombre);
+    setProgramaId(programaInicial.id);
+
+    setPeriod(periodoInicialValue);
+    setPeriodoCohorteId(periodoInicial.id);
+
     setSemester('Todos');
-    await loadData('Ingeniería de Sistemas', '2025-1');
+
+    await loadData(
+      programaInicial.nombre,
+      periodoInicialValue
+    );
+  } finally {
     setIsTabLoading(false);
-  };
+  }
+};
 
   const handleRefresh = async () => {
     setIsTabLoading(true);
@@ -248,15 +463,17 @@ export default function DashboardPage() {
         </div>
 
         <FilterBar
-          faculty={faculty}
-          program={program}
-          period={period}
-          semester={semester}
-          onProgramChange={handleProgramChange}
-          onPeriodChange={handlePeriodChange}
-          onSemesterChange={handleSemesterChange}
-          onResetFilters={handleResetFilters}
-        />
+  faculty={faculty}
+  program={program}
+  period={period}
+  semester={semester}
+  programas={programas}
+  periodos={periodos}
+  onProgramChange={handleProgramChange}
+  onPeriodChange={handlePeriodChange}
+  onSemesterChange={handleSemesterChange}
+  onResetFilters={handleResetFilters}
+/>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
           
@@ -271,6 +488,21 @@ export default function DashboardPage() {
             <BookOpen className="w-4 h-4" />
             {i18n.tabs.academic}
           </button>
+
+
+            <button
+  onClick={() => handleTabChange('cohort')}
+  className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+    activeTab === 'cohort'
+      ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
+  }`}
+>
+  <Users className="w-4 h-4" />
+  Análisis de Cohortes
+</button>
+
+
 
           <button
             onClick={() => handleTabChange('faculty')}
@@ -355,6 +587,16 @@ export default function DashboardPage() {
             {activeTab === 'academic' && (
               <AcademicPerformanceTab data={data} semesterFilter={semester} />
             )}
+
+                  {activeTab === 'cohort' && (
+          programaId !== null &&
+          periodoCohorteId !== null && (
+            <CohortAnalysisTab
+              programaId={programaId}
+              periodoCohorteId={periodoCohorteId}
+            />
+          )
+)}
 
             {activeTab === 'faculty' && (
               <FacultyTab data={data} />
