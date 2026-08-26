@@ -1,6 +1,12 @@
 ﻿import { DashboardData } from '@/types/dashboardTypes';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5282/api';
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return `http://${host}:5000/api`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+};
 
 export interface UploadResult {
   success: boolean;
@@ -13,7 +19,8 @@ export interface UploadResult {
 }
 
 export async function fetchDashboardData(program: string, period: string): Promise<DashboardData> {
-  const url = `${API_BASE_URL}/academic-indicators/dashboard?program=${encodeURIComponent(program)}&period=${encodeURIComponent(period)}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/academic-indicators/dashboard?program=${encodeURIComponent(program)}&period=${encodeURIComponent(period)}`;
   
   try {
     const response = await fetch(url, {
@@ -44,7 +51,8 @@ export async function uploadIndicatorFile(
   period: string,
   file: File
 ): Promise<UploadResult> {
-  const url = `${API_BASE_URL}/academic-indicators/upload`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/academic-indicators/upload`;
   const formData = new FormData();
   formData.append('indicatorType', indicatorType);
   formData.append('program', program);
