@@ -57,7 +57,7 @@ export function GraduatesTab({ data }: TabProps) {
 
   return (
     <div className="space-y-6">
-      
+
       {!hasData && (
         <div className="p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
           <div className="w-14 h-14 mx-auto rounded-full bg-[#f4faec] dark:bg-[#152708] text-[#67a623] dark:text-[#afdd7a] flex items-center justify-center">
@@ -82,7 +82,7 @@ export function GraduatesTab({ data }: TabProps) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        
+
         <div className="p-5 rounded-2xl bg-gradient-to-br from-[#7ece28] via-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20 relative group cursor-help overflow-visible">
           <div className="flex items-center justify-between text-white/90 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
@@ -155,7 +155,7 @@ export function GraduatesTab({ data }: TabProps) {
 
       {hasData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
+
           <Card>
             <CardHeader>
               <CardTitle>

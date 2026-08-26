@@ -62,7 +62,7 @@ export function FilterBar({
   };
 
   const hasPeriods = (availablePeriods && availablePeriods.length > 0) || (periodos && periodos.length > 0);
-  
+
   let periodOptions: string[] = [];
   if (availablePeriods && availablePeriods.length > 0) {
     periodOptions = [...availablePeriods].reverse();
@@ -71,12 +71,13 @@ export function FilterBar({
   }
 
   // Hide Semester filter for Academic tab since SACES metrics are reported strictly by Academic Period (2018-1 to 2025-1)
-  const showSemesterFilter = activeTab !== 'academic';
+  const showSemesterFilter =
+  activeTab !== 'academic' && activeTab !== 'cohort' && activeTab !== 'graduates';
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-sm mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        
+
         <div className="flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold text-sm">
             <div className="p-2 bg-[#f4faec] dark:bg-[#152708] text-[#67a623] dark:text-[#afdd7a] rounded-lg">
@@ -96,7 +97,7 @@ export function FilterBar({
         </div>
 
         <div className={`grid grid-cols-1 ${showSemesterFilter ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'} gap-3 w-full lg:w-auto flex-1 min-w-0`}>
-          
+
           {/* Facultad Filter */}
           <div className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl min-w-0 cursor-default">
             <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
@@ -104,7 +105,7 @@ export function FilterBar({
               <span className="text-[10px] uppercase font-bold text-slate-400 leading-tight">
                 {t.facultyLabel}
               </span>
-              <span 
+              <span
                 className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate"
                 title={faculty}
               >
@@ -114,7 +115,7 @@ export function FilterBar({
           </div>
 
           {/* Programa Filter */}
-          <div 
+          <div
             onClick={() => openSelectPicker('select-programa')}
             className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
           >
@@ -143,7 +144,7 @@ export function FilterBar({
           </div>
 
           {/* Periodo Académico Filter */}
-          <div 
+          <div
             onClick={() => openSelectPicker('select-periodo')}
             className={`flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 select-none ${
               hasPeriods ? 'cursor-pointer hover:border-[#67a623]' : 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-800/40'
@@ -179,7 +180,7 @@ export function FilterBar({
 
           {/* Optional Nivel / Semestre Filter */}
           {showSemesterFilter && (
-            <div 
+            <div
               onClick={() => openSelectPicker('select-semestre')}
               className="flex items-center gap-2.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus-within:ring-2 focus-within:ring-[#67a623] transition-all min-w-0 cursor-pointer hover:border-[#67a623] select-none"
             >

@@ -20,6 +20,9 @@ import { ResearchTab } from '@/components/tabs/research-tab';
 import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
 import { GraduatesTab } from '@/components/tabs/graduates-tab';
 import { CohortAnalysisTab } from '@/components/tabs/cohort-analysis-tab';
+import GraduateAnalysisTab from '@/components/tabs/graduate-analysis-tab';
+
+
 
 import {
   Award,
@@ -446,20 +449,22 @@ useEffect(() => {
           </div>
         </div>
 
-        <FilterBar
-faculty={faculty}
-          program={program}
-          period={period}
-          semester={semester}
-          activeTab={activeTab}
-          availablePeriods={availablePeriods}
-          programas={programas}
-          periodos={periodos}
-          onProgramChange={handleProgramChange}
-          onPeriodChange={handlePeriodChange}
-          onSemesterChange={handleSemesterChange}
-          onResetFilters={handleResetFilters}
-        />
+
+<FilterBar
+  faculty={faculty}
+  program={program}
+  period={period}
+  semester={semester}
+  activeTab={activeTab}
+  availablePeriods={availablePeriods}
+  programas={programas}
+  periodos={periodos}
+  onProgramChange={handleProgramChange}
+  onPeriodChange={handlePeriodChange}
+  onSemesterChange={handleSemesterChange}
+  onResetFilters={handleResetFilters}
+/>
+
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
           
@@ -596,8 +601,8 @@ faculty={faculty}
               <ExternalRelationsTab data={data} />
             )}
 
-            {activeTab === 'graduates' && (
-              <GraduatesTab data={data} />
+            {activeTab === 'graduates' && programaId !== null && (
+              <GraduateAnalysisTab programaId={programaId} />
             )}
           </div>
         )}

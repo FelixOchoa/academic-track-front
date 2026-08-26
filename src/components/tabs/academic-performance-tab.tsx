@@ -76,7 +76,7 @@ export function AcademicPerformanceTab({ data, periodFilter, semesterFilter }: T
 
   return (
     <div className="space-y-6">
-      
+
       {!hasData && (
         <div className="p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
           <div className="w-14 h-14 mx-auto rounded-full bg-[#f4faec] dark:bg-[#152708] text-[#67a623] dark:text-[#afdd7a] flex items-center justify-center">
@@ -102,7 +102,7 @@ export function AcademicPerformanceTab({ data, periodFilter, semesterFilter }: T
 
       {/* Dynamic KPI Cards responding to selected Period */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         <div className="p-5 rounded-2xl bg-gradient-to-br from-[#7ece28] via-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20 relative group cursor-help overflow-visible">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-white/90 flex items-center gap-1">
@@ -185,7 +185,7 @@ export function AcademicPerformanceTab({ data, periodFilter, semesterFilter }: T
         <>
           {/* Charts Row 1: Historic Enrolment & Admission Funnel */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             <Card className="overflow-visible relative">
               <CardHeader className="overflow-visible relative">
                 <div className="flex items-center justify-between">
@@ -395,11 +395,11 @@ export function AcademicPerformanceTab({ data, periodFilter, semesterFilter }: T
                       }
 
                       return (
-                        <tr 
-                          key={idx} 
+                        <tr
+                          key={idx}
                           className={`transition-colors ${
-                            isSelectedRow 
-                              ? 'bg-[#f4faec] dark:bg-[#152708]/80 font-semibold border-l-4 border-l-[#67a623]' 
+                            isSelectedRow
+                              ? 'bg-[#f4faec] dark:bg-[#152708]/80 font-semibold border-l-4 border-l-[#67a623]'
                               : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/30'
                           }`}
                         >

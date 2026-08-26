@@ -1,4 +1,5 @@
-import { SeguimientoCohorte } from '@/types/student-alumni';
+import { SeguimientoCohorte,SeguimientoEgresado,
+  AnalisisEgresado} from '@/types/student-alumni';
 
 const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5282/api'
@@ -169,6 +170,105 @@ class StudentAlumniService {
 
     return data;
   }
+
+ async obtenerSeguimientoEgresados(
+  programaId: number
+): Promise<SeguimientoEgresado[]> {
+  if (!Number.isInteger(programaId) || programaId <= 0) {
+    throw new Error('El programaId debe ser un número entero positivo.');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/seguimiento-egresado/${programaId}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+    }
+  );
+
+  if (!response.ok) {
+    let message = `Error HTTP ${response.status}`;
+
+    try {
+      const error = await response.json();
+
+      if (error?.mensaje) {
+        message = error.mensaje;
+      }
+    } catch {
+      // La API no devolvió JSON.
+    }
+
+    throw new Error(message);
+  }
+
+  const data: SeguimientoEgresado[] = await response.json();
+
+  if (!Array.isArray(data)) {
+    throw new Error(
+      'La API devolvió un formato inesperado para el seguimiento de egresados.'
+    );
+  }
+
+  return data;
+}
+
+async obtenerAnalisisEgresado(
+  programaId: number,
+  anioGraduacion: number
+): Promise<AnalisisEgresado> {
+  if (!Number.isInteger(programaId) || programaId <= 0) {
+    throw new Error('El programaId debe ser un número entero positivo.');
+  }
+
+  if (!Number.isInteger(anioGraduacion) || anioGraduacion <= 0) {
+    throw new Error('El año de graduación debe ser válido.');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/seguimiento-egresado/analisis/${programaId}/${anioGraduacion}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+    }
+  );
+
+  if (!response.ok) {
+    let message = `Error HTTP ${response.status}`;
+
+    try {
+      const error = await response.json();
+
+      if (error?.mensaje) {
+        message = error.mensaje;
+      }
+    } catch {
+      // La API no devolvió JSON.
+    }
+
+    throw new Error(message);
+  }
+
+  const data: AnalisisEgresado = await response.json();
+
+  if (!data || typeof data !== 'object') {
+    throw new Error(
+      'La API devolvió un formato inesperado para el análisis de egresados.'
+    );
+  }
+
+  return data;
+}
+
+
+
+
 }
 
 export const studentAlumniService = new StudentAlumniService();
