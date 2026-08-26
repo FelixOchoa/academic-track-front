@@ -4,6 +4,17 @@ import React from 'react';
 import { Filter, Layers, Calendar, BookOpen, Building2, RotateCcw } from 'lucide-react';
 import i18n from '@/i18n/es.json';
 
+interface ProgramaOption {
+  id: string | number;
+  nombre: string;
+}
+
+interface PeriodoOption {
+  id: string | number;
+  anio: number;
+  semestre: string;
+}
+
 interface FilterBarProps {
   faculty: string;
   program: string;
@@ -11,6 +22,8 @@ interface FilterBarProps {
   semester: string;
   activeTab?: string;
   availablePeriods?: string[];
+  programas?: ProgramaOption[];
+  periodos?: PeriodoOption[];
   onProgramChange: (val: string) => void;
   onPeriodChange: (val: string) => void;
   onSemesterChange: (val: string) => void;
@@ -24,6 +37,8 @@ export function FilterBar({
   semester,
   activeTab = 'academic',
   availablePeriods,
+  programas = [],
+  periodos = [],
   onProgramChange,
   onPeriodChange,
   onSemesterChange,
@@ -46,8 +61,14 @@ export function FilterBar({
     }
   };
 
-  const hasPeriods = availablePeriods && availablePeriods.length > 0;
-  const periodOptions = hasPeriods ? [...availablePeriods].reverse() : [];
+  const hasPeriods = (availablePeriods && availablePeriods.length > 0) || (periodos && periodos.length > 0);
+  
+  let periodOptions: string[] = [];
+  if (availablePeriods && availablePeriods.length > 0) {
+    periodOptions = [...availablePeriods].reverse();
+  } else if (periodos && periodos.length > 0) {
+    periodOptions = periodos.map(p => `${p.anio}-${p.semestre === 'I' ? '1' : '2'}`);
+  }
 
   // Hide Semester filter for Academic tab since SACES metrics are reported strictly by Academic Period (2018-1 to 2025-1)
   const showSemesterFilter = activeTab !== 'academic';
@@ -112,8 +133,11 @@ export function FilterBar({
               >
                 <option value="Todos los Programas">{t.allProgramsOption}</option>
                 <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                {programas.map((item) => (
+                  <option key={item.id} value={item.nombre}>
+                    {item.nombre}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
