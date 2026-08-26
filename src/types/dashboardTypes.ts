@@ -7,6 +7,25 @@
   durationSemesters: number;
 }
 
+export interface HistoricEnrolment {
+  period: string;
+  inscritos?: number;
+  admitidos?: number;
+  matriculados: number;
+  nuevos: number;
+  graduados?: number;
+  retirados?: number;
+  tasaDesercion?: number;
+}
+
+export interface SemesterBreakdown {
+  semestre: string;
+  estudiantes: number;
+  aprobacion: number;
+  reprobacion: number;
+  desercion: number;
+}
+
 export interface StudentMetrics {
   totalEnrolled: number;
   newStudents: number;
@@ -15,23 +34,58 @@ export interface StudentMetrics {
   dropoutRate: string;
   averageGraduationSemesters: number;
   targetGraduationSemesters: number;
-  historicEnrolment: { period: string; matriculados: number; nuevos: number }[];
-  semesterBreakdown: { semestre: string; estudiantes: number; aprobacion: number; reprobacion: number; desercion: number }[];
+  historicEnrolment: HistoricEnrolment[];
+  semesterBreakdown: SemesterBreakdown[];
+}
+
+export interface EducationLevel {
+  nivel: string;
+  cantidad: number;
+  porcentaje: number;
+}
+
+export interface HiringDistribution {
+  tipo: string;
+  cantidad: number;
+}
+
+export interface FeaturedFaculty {
+  id: string;
+  nombre: string;
+  formacion: string;
+  areaConocimiento: string;
+  articulosPublicados: number;
+  vinculacion: string;
 }
 
 export interface FacultyMetrics {
   total: number;
   fullTime: number;
-  educationLevel: { nivel: string; cantidad: number; porcentaje: number }[];
-  hiringDistribution: { tipo: string; cantidad: number }[];
-  featuredFaculty: {
-    id: string;
-    nombre: string;
-    formacion: string;
-    areaConocimiento: string;
-    articulosPublicados: number;
-    vinculacion: string;
-  }[];
+  educationLevel: EducationLevel[];
+  hiringDistribution: HiringDistribution[];
+  featuredFaculty: FeaturedFaculty[];
+}
+
+export interface ResearchGroup {
+  nombre: string;
+  categoria: string;
+  lider: string;
+  lineasInvestigacion: string[];
+  semillerosActivos: number;
+}
+
+export interface HistoricPublication {
+  año: string;
+  scopus: number;
+  nacionales: number;
+  libros: number;
+}
+
+export interface FeaturedPublication {
+  titulo: string;
+  revista: string;
+  año: string;
+  doi: string;
 }
 
 export interface ResearchMetrics {
@@ -39,29 +93,42 @@ export interface ResearchMetrics {
   recentPublications: number;
   innovations: number;
   patents: number;
-  groups: {
-    nombre: string;
-    categoria: string;
-    lider: string;
-    lineasInvestigacion: string[];
-    semillerosActivos: number;
-  }[];
-  historicPublications: { año: string; scopus: number; nacionales: number; libros: number }[];
-  featuredPublications: { titulo: string; revista: string; año: string; doi: string }[];
+  groups: ResearchGroup[];
+  historicPublications: HistoricPublication[];
+  featuredPublications: FeaturedPublication[];
+}
+
+export interface ExtensionActivity {
+  id: string;
+  nombre: string;
+  tipo: string;
+  participantes: number;
+  fecha: string;
+  impacto: string;
+}
+
+export interface Agreement {
+  institucion: string;
+  pais: string;
+  tipo: string;
+  estado: string;
 }
 
 export interface ExternalRelationsMetrics {
   nationalAgreements: number;
   internationalAgreements: number;
-  extensionActivities: {
-    id: string;
-    nombre: string;
-    tipo: string;
-    participantes: number;
-    fecha: string;
-    impacto: string;
-  }[];
-  agreementsList: { institucion: string; pais: string; tipo: string; estado: string }[];
+  extensionActivities: ExtensionActivity[];
+  agreementsList: Agreement[];
+}
+
+export interface PerformanceSector {
+  sector: string;
+  porcentaje: number;
+}
+
+export interface LocationDistribution {
+  region: string;
+  porcentaje: number;
 }
 
 export interface GraduateMetrics {
@@ -69,8 +136,8 @@ export interface GraduateMetrics {
   timeToEmploymentMonths: number;
   averageIncomeSMLV: number;
   employerSatisfaction: string;
-  performanceSectors: { sector: string; porcentaje: number }[];
-  locationDistribution: { region: string; porcentaje: number }[];
+  performanceSectors: PerformanceSector[];
+  locationDistribution: LocationDistribution[];
 }
 
 export interface DashboardData {
