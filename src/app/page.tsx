@@ -11,7 +11,6 @@ import {
   Periodo,
 } from '@/services/student-alumni.service';
 
-
 import i18n from '@/i18n/es.json';
 
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
@@ -21,8 +20,6 @@ import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
 import { GraduatesTab } from '@/components/tabs/graduates-tab';
 import { CohortAnalysisTab } from '@/components/tabs/cohort-analysis-tab';
 import GraduateAnalysisTab from '@/components/tabs/graduate-analysis-tab';
-
-
 
 import {
   Award,
@@ -48,182 +45,151 @@ type TabType =
   | 'externalRelations'
   | 'graduates';
 
+// Cache a nivel de módulo para evitar volver a mostrar la pantalla de carga al navegar entre rutas
+let cachedDashboardData: DashboardData | null = null;
+let cachedProgramas: Programa[] = [];
+let cachedPeriodos: Periodo[] = [];
+let cachedProgram: string = '';
+let cachedPeriod: string = '';
+let cachedProgramaId: number | null = null;
+let cachedPeriodoCohorteId: number | null = null;
+let isAppInitialized = false;
+
 export default function DashboardPage() {
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(!isAppInitialized);
 
   const [faculty] = useState('Facultad de Ingeniería y Tecnologías');
-  const [program, setProgram] = useState('');
-const [period, setPeriod] = useState('');
-const [semester, setSemester] = useState('Todos');
+  const [program, setProgram] = useState(cachedProgram);
+  const [period, setPeriod] = useState(cachedPeriod);
+  const [semester, setSemester] = useState('Todos');
 
-const [programaId, setProgramaId] = useState<number | null>(null);
-const [periodoCohorteId, setPeriodoCohorteId] = useState<number | null>(null);
-  const [programas, setProgramas] = useState<Programa[]>([]);
-  const [periodos, setPeriodos] = useState<Periodo[]>([]);
+  const [programaId, setProgramaId] = useState<number | null>(cachedProgramaId);
+  const [periodoCohorteId, setPeriodoCohorteId] = useState<number | null>(cachedPeriodoCohorteId);
+  const [programas, setProgramas] = useState<Programa[]>(cachedProgramas);
+  const [periodos, setPeriodos] = useState<Periodo[]>(cachedPeriodos);
   const [activeTab, setActiveTab] = useState<TabType>('academic');
   const [isTabLoading, setIsTabLoading] = useState(false);
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
 
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<DashboardData | null>(cachedDashboardData);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  const obtenerValorPeriodo = (periodoObj: Periodo): string => {
+    return `${periodoObj.anio}-${periodoObj.semestre === 'I' ? '1' : '2'}`;
+  };
 
+  const obtenerUltimoAnioCompleto = (
+    periodosData: Periodo[]
+  ): number | null => {
+    const anios = [...new Set(periodosData.map((p) => p.anio))].sort((a, b) => b - a);
 
-const obtenerValorPeriodo = (periodo: Periodo): string => {
-  return `${periodo.anio}-${periodo.semestre === 'I' ? '1' : '2'}`;
-};
+    const ultimoAnioCompleto = anios.find((anio) => {
+      const tienePrimerSemestre = periodosData.some(
+        (p) => p.anio === anio && p.semestre === 'I'
+      );
+      const tieneSegundoSemestre = periodosData.some(
+        (p) => p.anio === anio && p.semestre === 'II'
+      );
+      return tienePrimerSemestre && tieneSegundoSemestre;
+    });
 
-const obtenerUltimoAnioCompleto = (
-  periodosData: Periodo[]
-): number | null => {
-  const anios = [...new Set(periodosData.map((periodo) => periodo.anio))]
-    .sort((a, b) => b - a);
+    return ultimoAnioCompleto ?? null;
+  };
 
-  const ultimoAnioCompleto = anios.find((anio) => {
-    const tienePrimerSemestre = periodosData.some(
-      (periodo) =>
-        periodo.anio === anio &&
-        periodo.semestre === 'I'
+  const obtenerPeriodoCohorteInicial = (
+    periodosData: Periodo[]
+  ): Periodo | null => {
+    const ultimoAnioCompleto = obtenerUltimoAnioCompleto(periodosData);
+    if (ultimoAnioCompleto === null) {
+      return null;
+    }
+    return (
+      periodosData.find(
+        (p) => p.anio === ultimoAnioCompleto && p.semestre === 'I'
+      ) ?? null
     );
-
-    const tieneSegundoSemestre = periodosData.some(
-      (periodo) =>
-        periodo.anio === anio &&
-        periodo.semestre === 'II'
-    );
-
-    return tienePrimerSemestre && tieneSegundoSemestre;
-  });
-
-  return ultimoAnioCompleto ?? null;
-};
-
-const obtenerPeriodoCohorteInicial = (
-  periodosData: Periodo[]
-): Periodo | null => {
-  const ultimoAnioCompleto =
-    obtenerUltimoAnioCompleto(periodosData);
-
-  if (ultimoAnioCompleto === null) {
-    return null;
-  }
-
-  return (
-    periodosData.find(
-      (periodo) =>
-        periodo.anio === ultimoAnioCompleto &&
-        periodo.semestre === 'I'
-    ) ?? null
-  );
-};
-
-
+  };
 
   const loadData = async (selectedProgram: string, selectedPeriod: string) => {
     try {
       setFetchError(null);
       const result = await fetchDashboardData(selectedProgram, selectedPeriod);
       setData(result);
+      cachedDashboardData = result;
     } catch (err: any) {
       setFetchError(err.message || 'No se pudo conectar con el servidor backend');
     }
   };
 
-useEffect(() => {
-  const loadInitialData = async () => {
-    try {
-      setFetchError(null);
-
-      const [programasData, periodosData] = await Promise.all([
-        studentAlumniService.obtenerProgramas(),
-        studentAlumniService.obtenerPeriodos(),
-      ]);
-
-      setProgramas(programasData);
-      setPeriodos(periodosData);
-
-      if (programasData.length === 0) {
-        throw new Error('No existen programas académicos registrados.');
-      }
-
-      if (periodosData.length === 0) {
-        throw new Error('No existen períodos académicos registrados.');
-      }
-
-      /*
-       * Seleccionamos automáticamente el primer programa
-       * disponible en la base de datos.
-       */
-     const programaInicial =
-        programasData.find(
-          (programa) => programa.nombre === 'Ingeniería de Sistemas'
-        ) ?? programasData[0];
-
-      setProgram(programaInicial.nombre);
-      setProgramaId(programaInicial.id);
-      /*
-       * Buscamos el último año que tenga los dos semestres:
-       *
-       * 2024-I  ✅
-       * 2024-II ✅
-       *
-       * 2025-I  ✅
-       * 2025-II ✅
-       *
-       * 2026-I  ✅
-       * 2026-II ❌
-       *
-       * Resultado: 2025
-       */
-      const periodoInicial =
-        obtenerPeriodoCohorteInicial(periodosData);
-
-      if (!periodoInicial) {
-        throw new Error(
-          'No existe ningún año académico completamente finalizado.'
-        );
-      }
-
-      const periodoInicialValue =
-        obtenerValorPeriodo(periodoInicial);
-
-      setPeriod(periodoInicialValue);
-
-      /*
-       * Este ID será utilizado por Análisis de Cohortes.
-       *
-       * Ejemplo:
-       * 2025-I → ID 3
-       */
-      setPeriodoCohorteId(periodoInicial.id);
-
-      /*
-       * Cargamos el dashboard usando exactamente
-       * los valores obtenidos de PostgreSQL.
-       */
-      await loadData(
-        programaInicial.nombre,
-        periodoInicialValue
-      );
-
-      setIsInitialLoading(false);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'No se pudo inicializar el dashboard.';
-
-      setFetchError(message);
-      setIsInitialLoading(false);
+  useEffect(() => {
+    if (isAppInitialized && cachedDashboardData) {
+      return;
     }
-  };
 
-  void loadInitialData();
-}, []);
+    const loadInitialData = async () => {
+      try {
+        setFetchError(null);
 
-  
+        const [programasData, periodosData] = await Promise.all([
+          studentAlumniService.obtenerProgramas(),
+          studentAlumniService.obtenerPeriodos(),
+        ]);
+
+        setProgramas(programasData);
+        setPeriodos(periodosData);
+        cachedProgramas = programasData;
+        cachedPeriodos = periodosData;
+
+        if (programasData.length === 0) {
+          throw new Error('No existen programas académicos registrados.');
+        }
+
+        if (periodosData.length === 0) {
+          throw new Error('No existen períodos académicos registrados.');
+        }
+
+        const programaInicial =
+          programasData.find((p) => p.nombre === 'Ingeniería de Sistemas') ?? programasData[0];
+
+        setProgram(programaInicial.nombre);
+        setProgramaId(programaInicial.id);
+        cachedProgram = programaInicial.nombre;
+        cachedProgramaId = programaInicial.id;
+
+        const periodoInicial = obtenerPeriodoCohorteInicial(periodosData) ?? periodosData[0];
+
+        const periodoInicialValue = obtenerValorPeriodo(periodoInicial);
+
+        setPeriod(periodoInicialValue);
+        setPeriodoCohorteId(periodoInicial.id);
+        cachedPeriod = periodoInicialValue;
+        cachedPeriodoCohorteId = periodoInicial.id;
+
+        const result = await fetchDashboardData(
+          programaInicial.nombre,
+          periodoInicialValue
+        );
+
+        setData(result);
+        cachedDashboardData = result;
+        isAppInitialized = true;
+        setIsInitialLoading(false);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'No se pudo inicializar el dashboard.';
+
+        setFetchError(message);
+        setIsInitialLoading(false);
+      }
+    };
+
+    void loadInitialData();
+  }, []);
+
   const handleOpenReportModal = () => {
     setIsModalClosing(false);
     setShowReportModal(true);
@@ -237,234 +203,178 @@ useEffect(() => {
     }, 240);
   };
 
-  useEffect(() => {
-    if (showReportModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  const handleProgramChange = (newProgram: string) => {
+    setProgram(newProgram);
+    cachedProgram = newProgram;
+    const selectedProg = programas.find((p) => p.nombre === newProgram);
+    if (selectedProg) {
+      setProgramaId(selectedProg.id);
+      cachedProgramaId = selectedProg.id;
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showReportModal]);
+    void loadData(newProgram, period);
+  };
 
-  const handleTabChange = (newTab: TabType) => {
-    if (newTab === activeTab) return;
+  const handlePeriodChange = (newPeriod: string) => {
+    setPeriod(newPeriod);
+    cachedPeriod = newPeriod;
+    const [anioStr, semNumStr] = newPeriod.split('-');
+    const targetAnio = parseInt(anioStr, 10);
+    const targetSemestre = semNumStr === '1' ? 'I' : 'II';
+    const selectedPeriodo = periodos.find(
+      (p) => p.anio === targetAnio && p.semestre === targetSemestre
+    );
+    if (selectedPeriodo) {
+      setPeriodoCohorteId(selectedPeriodo.id);
+      cachedPeriodoCohorteId = selectedPeriodo.id;
+    }
+    void loadData(program, newPeriod);
+  };
+
+  const handleSemesterChange = (newSemester: string) => {
+    setSemester(newSemester);
+  };
+
+  const handleResetFilters = () => {
+    if (programas.length > 0) {
+      const pInit = programas.find((p) => p.nombre === 'Ingeniería de Sistemas') ?? programas[0];
+      setProgram(pInit.nombre);
+      setProgramaId(pInit.id);
+      cachedProgram = pInit.nombre;
+      cachedProgramaId = pInit.id;
+    }
+    if (periodos.length > 0) {
+      const perInit = obtenerPeriodoCohorteInicial(periodos) ?? periodos[0];
+      const val = obtenerValorPeriodo(perInit);
+      setPeriod(val);
+      setPeriodoCohorteId(perInit.id);
+      cachedPeriod = val;
+      cachedPeriodoCohorteId = perInit.id;
+      void loadData(program, val);
+    }
+    setSemester('Todos');
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    if (tab === activeTab) return;
     setIsTabLoading(true);
-    setActiveTab(newTab);
+    setActiveTab(tab);
     setTimeout(() => {
       setIsTabLoading(false);
-    }, 380);
+    }, 280);
   };
 
-    const handleProgramChange = async (val: string) => {
-    const programaSeleccionado = programas.find(
-      (item) => item.nombre === val
-    );
+  const availablePeriods = periodos.map((p) => `${p.anio}-${p.semestre === 'I' ? '1' : '2'}`);
 
-    if (!programaSeleccionado) {
-      return;
-    }
-
-    try {
-      setIsTabLoading(true);
-
-      setProgram(programaSeleccionado.nombre);
-      setProgramaId(programaSeleccionado.id);
-
-      await loadData(
-        programaSeleccionado.nombre,
-        period
-      );
-    } finally {
-      setIsTabLoading(false);
-    }
-  };
-
-  const handlePeriodChange = async (val: string) => {
-    const periodoSeleccionado = periodos.find(
-      (item) => obtenerValorPeriodo(item) === val
-    );
-
-    if (!periodoSeleccionado) {
-      return;
-    }
-
-    try {
-      setIsTabLoading(true);
-
-      setPeriod(val);
-      setPeriodoCohorteId(periodoSeleccionado.id);
-
-      await loadData(program, val);
-    } finally {
-      setIsTabLoading(false);
-    }
-  };
-
-
-  
-  const handleSemesterChange = (val: string) => {
-    setIsTabLoading(true);
-    setSemester(val);
-    setTimeout(() => setIsTabLoading(false), 250);
-  };
-
-  const handleResetFilters = async () => {
-  if (programas.length === 0 || periodos.length === 0) {
-    return;
-  }
-
-  const programaInicial =
-  programas.find(
-    (programa) => programa.nombre === 'Ingeniería de Sistemas'
-  ) ?? programas[0];
-  const periodoInicial =
-    obtenerPeriodoCohorteInicial(periodos);
-
-  if (!periodoInicial) {
-    return;
-  }
-
-  const periodoInicialValue =
-    obtenerValorPeriodo(periodoInicial);
-
-  try {
-    setIsTabLoading(true);
-
-    setProgram(programaInicial.nombre);
-    setProgramaId(programaInicial.id);
-
-    setPeriod(periodoInicialValue);
-    setPeriodoCohorteId(periodoInicial.id);
-
-    setSemester('Todos');
-
-    await loadData(
-      programaInicial.nombre,
-      periodoInicialValue
-    );
-  } finally {
-    setIsTabLoading(false);
-  }
-};
-
-  const handleRefresh = async () => {
-    setIsTabLoading(true);
-    await loadData(program, period);
-    setTimeout(() => setIsTabLoading(false), 350);
-  };
-
-  const availablePeriods = data?.students?.historicEnrolment?.map(e => e.period) || [];
-
-  if (isInitialLoading || !data) {
+  if (isInitialLoading) {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-6 space-y-5">
-        <div className="relative p-1 rounded-full bg-gradient-to-tr from-[#67a623] via-[#8ecb4b] to-[#548a1a] shadow-xl shadow-[#67a623]/25 animate-pulse">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo-loading.png"
-            alt={i18n.navbar.logoAlt}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover bg-white p-0.5 border border-white/50"
-          />
-        </div>
-
-        {!fetchError ? (
-          <>
-            <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-5 py-3 rounded-2xl shadow-lg">
-              <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
-              <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 tracking-wide">
-                {i18n.initialLoader.title}
-              </span>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-[#67a623]/20 border-t-[#67a623] animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-[#67a623]" />
             </div>
-            <p className="text-xs text-slate-400 font-medium">
-              Cargando indicadores del programa...
-            </p>
-          </>
-        ) : (
-          <div className="max-w-md w-full p-6 rounded-3xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 shadow-2xl text-center space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Error al conectar con la API
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {fetchError}
-              </p>
-            </div>
-            <button
-              onClick={handleRefresh}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#67a623] hover:bg-[#548a1a] text-white text-xs font-bold rounded-xl shadow-md transition-all"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Reintentar Conexión
-            </button>
           </div>
-        )}
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              Cargando Panel de Indicadores...
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Conectando con la base de datos de la universidad
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
+  if (fetchError || !data) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-900/40 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-xl space-y-4">
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Error al conectar con la API
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+              {fetchError || 'No se pudo obtener la información de indicadores.'}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              isAppInitialized = false;
+              setIsInitialLoading(true);
+              const p = program || 'Ingeniería de Sistemas';
+              const per = period || '2025-1';
+              void loadData(p, per).then(() => {
+                isAppInitialized = true;
+                setIsInitialLoading(false);
+              });
+            }}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#67a623] hover:bg-[#548a1a] text-white text-xs font-bold rounded-xl w-full shadow-md transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Reintentar Conexión
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const totalAgreements = data.externalRelations.nationalAgreements + data.externalRelations.internationalAgreements;
+
   return (
-    <div className="min-h-screen bg-slate-100/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <Navbar />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
+      
+      <Navbar onExportReport={handleOpenReportModal} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-6 relative overflow-hidden">
-          <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-[#67a623]/20 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="bg-gradient-to-r from-[#406a16] via-[#548a1a] to-[#67a623] rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-[#67a623]/10 mb-8 relative overflow-hidden">
+          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-3xl">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-bold text-[#afdd7a] border border-white/10">
-                  SNIES: {data.programInfo.sniesCode}
-                </span>
-                <span className="px-3 py-1 bg-[#67a623]/20 backdrop-blur-md rounded-full text-xs font-bold text-white border border-[#67a623]/40">
-                  {data.programInfo.accreditation}
-                </span>
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider text-[#f4faec]">
+                <span>Acreditación de Alta Calidad</span>
               </div>
-
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
                 {data.programInfo.name}
               </h1>
-
-              <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                <span>Director(a): <strong>{data.programInfo.director}</strong></span>
-                <span className="hidden sm:inline"> • </span>
-                <span title={`${i18n.banner.modalityLabel} ${data.programInfo.modality} con duración de ${data.programInfo.durationSemesters} semestres`}>{i18n.banner.modalityLabel} {data.programInfo.modality} ({data.programInfo.durationSemesters} {i18n.banner.semestersLabel})</span>
+              <p className="text-xs sm:text-sm text-slate-100/90 max-w-2xl leading-relaxed">
+                Seguimiento continuo de indicadores para la toma de decisiones estratégicas y autoevaluación.
               </p>
             </div>
-
-            <div className="flex items-center gap-3 self-start md:self-center shrink-0">
-              <div className="text-right hidden lg:block">
-                <span className="text-[11px] uppercase font-bold text-slate-400">{i18n.banner.cnaStatusTitle}</span>
-                <p className="text-xs font-semibold text-[#afdd7a] flex items-center justify-end gap-1" title={i18n.banner.cnaStatusTooltip}>
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {i18n.banner.cnaStatusValue}
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+              <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 space-y-1 text-right w-full sm:w-auto">
+                <p className="text-[10px] uppercase font-bold text-slate-200 tracking-wider">
+                  Estado CNA
+                </p>
+                <p className="text-xs font-semibold text-[#afdd7a] flex items-center justify-end gap-1" title="El programa cumple con los estándares del CNA">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Autoevaluación al Día
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-
-<FilterBar
-  faculty={faculty}
-  program={program}
-  period={period}
-  semester={semester}
-  activeTab={activeTab}
-  availablePeriods={availablePeriods}
-  programas={programas}
-  periodos={periodos}
-  onProgramChange={handleProgramChange}
-  onPeriodChange={handlePeriodChange}
-  onSemesterChange={handleSemesterChange}
-  onResetFilters={handleResetFilters}
-/>
-
+        <FilterBar
+          faculty={faculty}
+          program={program}
+          period={period}
+          semester={semester}
+          activeTab={activeTab}
+          availablePeriods={availablePeriods}
+          programas={programas}
+          periodos={periodos}
+          onProgramChange={handleProgramChange}
+          onPeriodChange={handlePeriodChange}
+          onSemesterChange={handleSemesterChange}
+          onResetFilters={handleResetFilters}
+        />
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
           
@@ -480,20 +390,17 @@ useEffect(() => {
             {i18n.tabs.academic}
           </button>
 
-
-            <button
-  onClick={() => handleTabChange('cohort')}
-  className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
-    activeTab === 'cohort'
-      ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
-      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
-  }`}
->
-  <Users className="w-4 h-4" />
-  Análisis de Cohortes
-</button>
-
-
+          <button
+            onClick={() => handleTabChange('cohort')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
+              activeTab === 'cohort'
+                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Análisis de Cohortes
+          </button>
 
           <button
             onClick={() => handleTabChange('faculty')}
@@ -528,7 +435,7 @@ useEffect(() => {
             }`}
           >
             <Globe className="w-4 h-4" />
-            {i18n.tabs.externalRelations} ({data.externalRelations.nationalAgreements + data.externalRelations.internationalAgreements})
+            {i18n.tabs.externalRelations} ({totalAgreements})
           </button>
 
           <button
@@ -540,37 +447,24 @@ useEffect(() => {
             }`}
           >
             <Briefcase className="w-4 h-4" />
-            {i18n.tabs.graduates} ({data.graduates.employmentRate})
+            {i18n.tabs.graduates}
           </button>
 
         </div>
 
         {isTabLoading ? (
-          <div className="space-y-6 animate-pulse">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-28 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-5 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
-                  <div className="h-4 w-28 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
-                  <div className="h-8 w-20 bg-slate-300/80 dark:bg-slate-700/80 rounded-lg" />
-                  <div className="h-3 w-36 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
-                </div>
-              ))}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm animate-pulse space-y-6">
+            <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+              <div className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+              <div className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+              <div className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="h-80 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-6 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
-                <div className="h-5 w-48 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
-                <div className="h-52 w-full bg-slate-300/50 dark:bg-slate-700/50 rounded-xl" />
-              </div>
-              <div className="h-80 rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 p-6 flex flex-col justify-between border border-slate-300/50 dark:border-slate-700/50">
-                <div className="h-5 w-48 bg-slate-300/80 dark:bg-slate-700/80 rounded-md" />
-                <div className="h-52 w-full bg-slate-300/50 dark:bg-slate-700/50 rounded-xl" />
-              </div>
-            </div>
-
+            <div className="h-52 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
             <div className="flex items-center justify-center gap-2 py-4 text-xs font-bold text-[#406a16] dark:text-[#afdd7a]">
               <Loader2 className="w-4 h-4 animate-spin text-[#67a623]" />
-              <span>{i18n.tabLoader.status}</span>
+              <span>Cargando datos...</span>
             </div>
           </div>
         ) : (
@@ -579,15 +473,15 @@ useEffect(() => {
               <AcademicPerformanceTab data={data} periodFilter={period} semesterFilter={semester} />
             )}
 
-                  {activeTab === 'cohort' && (
-          programaId !== null &&
-          periodoCohorteId !== null && (
-            <CohortAnalysisTab
-              programaId={programaId}
-              periodoCohorteId={periodoCohorteId}
-            />
-          )
-)}
+            {activeTab === 'cohort' && (
+              programaId !== null &&
+              periodoCohorteId !== null && (
+                <CohortAnalysisTab
+                  programaId={programaId}
+                  periodoCohorteId={periodoCohorteId}
+                />
+              )
+            )}
 
             {activeTab === 'faculty' && (
               <FacultyTab data={data} />
@@ -624,7 +518,6 @@ useEffect(() => {
               isModalClosing ? 'animate-modal-out' : 'animate-modal-in'
             }`}
           >
-            
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
