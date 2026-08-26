@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Quicksand } from 'next/font/google';
 import './globals.css';
+import { Sidebar } from '@/components/sidebar';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -31,7 +32,10 @@ export default function RootLayout({
         <link rel="icon" href="/logo-loading.png" type="image/png" />
       </head>
       <body className={`${quicksand.className} min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased`}>
-        {children}
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <Sidebar />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
       </body>
     </html>
   );
