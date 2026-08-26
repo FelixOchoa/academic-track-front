@@ -355,6 +355,8 @@ useEffect(() => {
     setTimeout(() => setIsTabLoading(false), 350);
   };
 
+  const availablePeriods = data?.students?.historicEnrolment?.map(e => e.period) || [];
+
   if (isInitialLoading || !data) {
     return (
       <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-6 space-y-5">
@@ -375,36 +377,28 @@ useEffect(() => {
                 {i18n.initialLoader.title}
               </span>
             </div>
-
-            <div className="text-center space-y-1">
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                {i18n.initialLoader.faculty}
-              </p>
-              <p className="text-[11px] text-[#548a1a] dark:text-[#afdd7a] font-medium">
-                {i18n.initialLoader.status}
-              </p>
-            </div>
-
-            <div className="w-48 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/60 dark:border-slate-700">
-              <div className="h-full bg-gradient-to-r from-[#67a623] via-[#8ecb4b] to-[#548a1a] animate-pulse" />
-            </div>
+            <p className="text-xs text-slate-400 font-medium">
+              Cargando indicadores del programa...
+            </p>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-3.5 p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 rounded-3xl max-w-md text-center shadow-xl">
-            <div className="p-3 bg-rose-100 dark:bg-rose-900/50 rounded-2xl text-rose-600 dark:text-rose-300">
-              <AlertTriangle className="w-6 h-6 shrink-0" />
+          <div className="max-w-md w-full p-6 rounded-3xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 shadow-2xl text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-full bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-sm sm:text-base">No se pudo obtener la información</h3>
-              <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Error al conectar con la API
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {fetchError}
               </p>
             </div>
             <button
               onClick={handleRefresh}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer mt-1"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#67a623] hover:bg-[#548a1a] text-white text-xs font-bold rounded-xl shadow-md transition-all"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-4 h-4" />
               Reintentar Conexión
             </button>
           </div>
@@ -414,42 +408,32 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100/90 dark:bg-slate-950 pb-16">
-      
-      <Navbar
-        onExportReport={handleOpenReportModal}
-        onRefresh={handleRefresh}
-      />
+    <div className="min-h-screen bg-slate-100/90 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
         
-        <div className="mb-6 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-[#152708] to-slate-900 text-white shadow-xl relative overflow-hidden border border-[#355516]/60">
-          <div className="absolute right-0 top-0 w-96 h-96 bg-[#67a623]/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span 
-                  className="px-3 py-1 text-xs font-bold bg-[#67a623]/20 text-[#afdd7a] border border-[#67a623]/40 rounded-full cursor-help"
-                  title={`Código SNIES Oficial: ${data.programInfo.sniesCode}`}
-                >
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-6 relative overflow-hidden">
+          <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-[#67a623]/20 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-bold text-[#afdd7a] border border-white/10">
                   SNIES: {data.programInfo.sniesCode}
                 </span>
-                <span 
-                  className="px-3 py-1 text-xs font-bold bg-[#548a1a]/25 text-[#ceeaad] border border-[#548a1a]/40 rounded-full cursor-help"
-                  title={`Acreditación: ${data.programInfo.accreditation}`}
-                >
+                <span className="px-3 py-1 bg-[#67a623]/20 backdrop-blur-md rounded-full text-xs font-bold text-white border border-[#67a623]/40">
                   {data.programInfo.accreditation}
                 </span>
               </div>
-              <h2 
-                className="text-2xl md:text-3xl font-black tracking-tight truncate cursor-help"
-                title={data.programInfo.name}
-              >
+
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
                 {data.programInfo.name}
-              </h2>
-              <p className="text-xs md:text-sm text-slate-300 mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span title={`${i18n.banner.directorLabel}: ${data.programInfo.director}`}>{i18n.banner.directorLabel}: <strong>{data.programInfo.director}</strong></span>
-                <span className="hidden sm:inline">•</span>
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                <span>Director(a): <strong>{data.programInfo.director}</strong></span>
+                <span className="hidden sm:inline"> • </span>
                 <span title={`${i18n.banner.modalityLabel} ${data.programInfo.modality} con duración de ${data.programInfo.durationSemesters} semestres`}>{i18n.banner.modalityLabel} {data.programInfo.modality} ({data.programInfo.durationSemesters} {i18n.banner.semestersLabel})</span>
               </p>
             </div>
@@ -465,21 +449,22 @@ useEffect(() => {
           </div>
         </div>
 
+
 <FilterBar
   faculty={faculty}
   program={program}
   period={period}
   semester={semester}
+  activeTab={activeTab}
+  availablePeriods={availablePeriods}
   programas={programas}
   periodos={periodos}
   onProgramChange={handleProgramChange}
   onPeriodChange={handlePeriodChange}
   onSemesterChange={handleSemesterChange}
   onResetFilters={handleResetFilters}
-  showFaculty={true}
-showPeriod={activeTab !== 'graduates'}
-showSemester={activeTab === 'academic'}
 />
+
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
           
@@ -591,7 +576,7 @@ showSemester={activeTab === 'academic'}
         ) : (
           <div key={activeTab} className="animate-tab-fade">
             {activeTab === 'academic' && (
-              <AcademicPerformanceTab data={data} semesterFilter={semester} />
+              <AcademicPerformanceTab data={data} periodFilter={period} semesterFilter={semester} />
             )}
 
                   {activeTab === 'cohort' && (
@@ -656,7 +641,7 @@ showSemester={activeTab === 'academic'}
                     {i18n.reportModal.title}
                   </h3>
                   <p className="text-xs text-slate-500 print:text-slate-700 font-medium">
-                    {data.programInfo.name} — SNIES {data.programInfo.sniesCode} — Periodo {period}
+                    {data.programInfo.name} - SNIES {data.programInfo.sniesCode} - Periodo {period}
                   </p>
                 </div>
               </div>
@@ -674,12 +659,12 @@ showSemester={activeTab === 'academic'}
                   {i18n.reportModal.section1Title}
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                  <div>{i18n.reportModal.matrículaLabel} <strong>{data.students.totalEnrolled} alumnos</strong></div>
-                  <div>{i18n.reportModal.newLabel} <strong>{data.students.newStudents} estudiantes</strong></div>
-                  <div>{i18n.reportModal.approvalLabel} <strong className="text-[#67a623] print:text-black">{data.students.approvalRate}</strong></div>
-                  <div>{i18n.reportModal.dropoutLabel} <strong>{data.students.dropoutRate}</strong></div>
-                  <div>{i18n.reportModal.avgGraduationLabel} <strong>{data.students.averageGraduationSemesters} Semestres</strong></div>
-                  <div>{i18n.reportModal.metaGraduationLabel} <strong>{data.students.targetGraduationSemesters} Semestres</strong></div>
+                  <div>Matrícula: <strong>{data.students.totalEnrolled} alumnos</strong></div>
+                  <div>Nuevos: <strong>{data.students.newStudents} estudiantes</strong></div>
+                  <div>Aprobación: <strong className="text-[#67a623] print:text-black">{data.students.approvalRate}</strong></div>
+                  <div>Deserción: <strong>{data.students.dropoutRate}</strong></div>
+                  <div>Graduación promedio: <strong>{data.students.averageGraduationSemesters} Semestres</strong></div>
+                  <div>Meta graduación: <strong>{data.students.targetGraduationSemesters} Semestres</strong></div>
                 </div>
               </div>
 
@@ -688,9 +673,9 @@ showSemester={activeTab === 'academic'}
                   {i18n.reportModal.section2Title}
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                  <div>{i18n.reportModal.totalFacultyLabel} <strong>{data.faculty.total} profesores</strong></div>
-                  <div>{i18n.reportModal.fullTimeLabel} <strong>{data.faculty.fullTime} docentes</strong></div>
-                  <div>{i18n.reportModal.phdPercentLabel} <strong className="text-[#67a623] print:text-black">{data.faculty.educationLevel.find(n => n.nivel === 'Doctorado')?.porcentaje}%</strong></div>
+                  <div>Total docentes: <strong>{data.faculty.total} profesores</strong></div>
+                  <div>Tiempo completo: <strong>{data.faculty.fullTime} docentes</strong></div>
+                  <div>% Ph.D.: <strong className="text-[#67a623] print:text-black">{data.faculty.educationLevel.find(n => n.nivel === 'Doctorado')?.porcentaje}%</strong></div>
                 </div>
               </div>
 
@@ -699,10 +684,10 @@ showSemester={activeTab === 'academic'}
                   {i18n.reportModal.section3Title}
                 </h4>
                 <ul className="space-y-1 text-xs">
-                  <li>• <strong>{i18n.reportModal.mincienciasLabel}</strong> {data.research.groups.map(g => `${g.nombre} (Cat. ${g.categoria})`).join(', ')}.</li>
-                  <li>• <strong>{i18n.reportModal.indexedLabel}</strong> {data.research.scopusIndexed} artículos en Scopus / Web of Science.</li>
-                  <li>• <strong>{i18n.reportModal.agreementsLabel}</strong> {data.externalRelations.nationalAgreements} Nacionales y {data.externalRelations.internationalAgreements} Internacionales.</li>
-                  <li>• <strong>{i18n.reportModal.employabilityLabel}</strong> {data.graduates.employmentRate} con tiempo promedio de enganche de {data.graduates.timeToEmploymentMonths} meses.</li>
+                  <li>  <strong>Grupos MinCiencias:</strong> {data.research.groups.map(g => `${g.nombre} (Cat. ${g.categoria})`).join(', ')}.</li>
+                  <li>  <strong>Publicaciones Indexadas:</strong> {data.research.scopusIndexed} artículos en Scopus / Web of Science.</li>
+                  <li>  <strong>Convenios:</strong> {data.externalRelations.nationalAgreements} Nacionales y {data.externalRelations.internationalAgreements} Internacionales.</li>
+                  <li>  <strong>Empleabilidad:</strong> {data.graduates.employmentRate} con tiempo promedio de enganche de {data.graduates.timeToEmploymentMonths} meses.</li>
                 </ul>
               </div>
 
