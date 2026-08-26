@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Pencil } from 'lucide-react';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { SemaforoBadge, estadoLabel } from '@/components/metas/semaforo-badge';
@@ -43,7 +43,7 @@ export function MetasTable({
             >
               <td className="py-3.5 px-4">
                 <p className="font-semibold text-slate-900 dark:text-white">{meta.nombre}</p>
-                <p className="text-[11px] text-slate-400">{meta.indicadorNombre}</p>
+                <p className="text-[11px] text-slate-400 font-medium">{meta.indicadorNombre}</p>
               </td>
               <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">{meta.responsable}</td>
               <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">{meta.fechaLimite}</td>
@@ -58,7 +58,7 @@ export function MetasTable({
               <td className="py-3.5 px-4">
                 <div className="flex flex-col gap-1 items-start">
                   <SemaforoBadge semaforo={meta.semaforo} />
-                  <span className="text-[10px] text-slate-400">{estadoLabel(meta.estado)}</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{estadoLabel(meta.estado)}</span>
                 </div>
               </td>
               <td className="py-3.5 px-4 text-right">
@@ -67,7 +67,7 @@ export function MetasTable({
                     e.stopPropagation();
                     onEditar(meta);
                   }}
-                  className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                  className="p-1.5 text-slate-400 hover:text-[#67a623] rounded-lg hover:bg-[#f4faec] dark:hover:bg-[#152708] transition-colors"
                   aria-label="Editar meta"
                 >
                   <Pencil className="w-3.5 h-3.5" />

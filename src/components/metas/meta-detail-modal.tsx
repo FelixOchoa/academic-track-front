@@ -1,16 +1,28 @@
-'use client';
-
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { FileText, Link as LinkIcon, Plus } from 'lucide-react';
-import { Modal } from '@/components/ui/modal';
-import { Field, Input, Select, Textarea } from '@/components/ui/form-controls';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/form-controls';
+import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 import { ProgressBar } from '@/components/ui/progress-bar';
-import { SemaforoBadge, estadoLabel } from '@/components/metas/semaforo-badge';
-import { actualizarAvanceMeta, agregarEvidencia, cancelarMeta } from '@/services/metasService';
-import { EstadoMeta, MetaDto } from '@/types/metas';
+import { Select } from '@/components/ui/select';
 
-const ESTADOS_MANUALES: EstadoMeta[] = ['EnProgreso', 'Retrasada', 'Cumplida'];
+import { Textarea } from '@/components/ui/textarea';
+import { SemaforoBadge, estadoLabel } from '@/components/metas/semaforo-badge';
+import {
+  actualizarAvanceMeta,
+  agregarEvidencia,
+  cancelarMeta,
+} from '@/services/metasService';
+import { MetaDto, EstadoMeta } from '@/types/metas';
+
+const ESTADOS_MANUALES: EstadoMeta[] = [
+  'NoIniciada',
+  'EnProgreso',
+  'Cumplida',
+  'Retrasada',
+  'Cancelada',
+];
 
 export function MetaDetailModal({
   open,
@@ -23,37 +35,42 @@ export function MetaDetailModal({
   meta: MetaDto | null;
   onUpdated: (meta: MetaDto) => void;
 }) {
-  const [avance, setAvance] = useState('');
-  const [estadoManual, setEstadoManual] = useState('');
+  const [avance, setAvance] = useState<string>('');
+  const [estadoManual, setEstadoManual] = useState<string>('');
   const [showEvidenciaForm, setShowEvidenciaForm] = useState(false);
   const [evidenciaDescripcion, setEvidenciaDescripcion] = useState('');
   const [evidenciaUrl, setEvidenciaUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!meta) return null;
+  React.useEffect(() => {
+    if (meta) {
+      setAvance(String(meta.avanceActual));
+      setEstadoManual(meta.estado === 'NoIniciada' || meta.estado === 'EnProgreso' ? '' : meta.estado);
+      setShowEvidenciaForm(false);
+      setEvidenciaDescripcion('');
+      setEvidenciaUrl('');
+      setError(null);
+    }
+  }, [meta]);
 
-  function resetLocalState() {
-    setAvance('');
-    setEstadoManual('');
-    setShowEvidenciaForm(false);
-    setEvidenciaDescripcion('');
-    setEvidenciaUrl('');
-    setError(null);
-  }
+  if (!meta) return null;
 
   async function handleActualizarAvance(e: React.FormEvent) {
     e.preventDefault();
-    if (!meta || avance === '') return;
+    if (!meta) return;
     setBusy(true);
     setError(null);
     try {
+      const valor = Number(avance);
+      if (Number.isNaN(valor)) {
+        throw new Error('El valor de avance debe ser numérico.');
+      }
       const actualizada = await actualizarAvanceMeta(meta.id, {
-        avanceActual: Number(avance),
-        estado: estadoManual ? (estadoManual as EstadoMeta) : null,
+        avanceActual: valor,
+        estado: (estadoManual as EstadoMeta) || undefined,
       });
       onUpdated(actualizada);
-      resetLocalState();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo actualizar el avance.');
     } finally {
@@ -63,13 +80,13 @@ export function MetaDetailModal({
 
   async function handleAgregarEvidencia(e: React.FormEvent) {
     e.preventDefault();
-    if (!meta || !evidenciaDescripcion.trim()) return;
+    if (!meta) return;
     setBusy(true);
     setError(null);
     try {
       const actualizada = await agregarEvidencia(meta.id, {
         descripcion: evidenciaDescripcion,
-        url: evidenciaUrl || null,
+        url: evidenciaUrl || undefined,
       });
       onUpdated(actualizada);
       setShowEvidenciaForm(false);
@@ -84,9 +101,7 @@ export function MetaDetailModal({
 
   async function handleCancelar() {
     if (!meta) return;
-    if (!confirm(`¿Cancelar la meta "${meta.nombre}"? Esta acción no elimina el registro, solo la marca como cancelada.`)) {
-      return;
-    }
+    if (!confirm('¿Estás seguro de cancelar esta meta? Esta acción no se puede deshacer.')) return;
     setBusy(true);
     setError(null);
     try {
@@ -105,7 +120,7 @@ export function MetaDetailModal({
     <Modal open={open} onClose={onClose} title={meta.nombre} subtitle={meta.indicadorNombre} maxWidth="max-w-3xl">
       <div className="space-y-6">
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900">
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900/60">
             {error}
           </div>
         )}
@@ -132,7 +147,7 @@ export function MetaDetailModal({
             <span>Límite: <strong className="text-slate-700 dark:text-slate-200">{meta.fechaLimite}</strong></span>
           </div>
           {meta.descripcion && (
-            <p className="text-xs text-slate-600 dark:text-slate-300 pt-1 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-200 dark:border-slate-700">
               {meta.descripcion}
             </p>
           )}
@@ -186,7 +201,7 @@ export function MetaDetailModal({
             </h4>
             {!showEvidenciaForm && (
               <Button type="button" variant="secondary" size="sm" onClick={() => setShowEvidenciaForm(true)}>
-                <Plus className="w-3.5 h-3.5" /> Agregar evidencia
+                <Plus className="w-3.5 h-3.5 text-[#67a623]" /> Agregar evidencia
               </Button>
             )}
           </div>
@@ -235,7 +250,7 @@ export function MetaDetailModal({
                   key={idx}
                   className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
                 >
-                  <FileText className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <FileText className="w-4 h-4 text-[#67a623] shrink-0 mt-0.5" />
                   <div className="min-w-0">
                     <p className="text-xs text-slate-700 dark:text-slate-200">{ev.descripcion}</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -245,7 +260,7 @@ export function MetaDetailModal({
                           href={ev.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-emerald-600 hover:underline flex items-center gap-1"
+                          className="text-[11px] text-[#67a623] font-semibold hover:underline flex items-center gap-1"
                         >
                           <LinkIcon className="w-3 h-3" /> Ver enlace
                         </a>

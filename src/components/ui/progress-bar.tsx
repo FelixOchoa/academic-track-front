@@ -1,9 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '@/lib/utils';
 import { Semaforo } from '@/types/metas';
 
 const barColor: Record<Semaforo, string> = {
-  Verde: 'bg-emerald-500',
+  Verde: 'bg-[#67a623]',
   Amarillo: 'bg-amber-500',
   Rojo: 'bg-rose-500',
   Gris: 'bg-slate-400',

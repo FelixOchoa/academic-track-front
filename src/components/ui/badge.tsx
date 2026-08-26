@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '@/lib/utils';
 
 type BadgeTone = 'emerald' | 'amber' | 'rose' | 'slate';
@@ -12,7 +12,7 @@ export interface BadgeProps
 
 const toneClasses: Record<BadgeTone, string> = {
   emerald:
-    'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+    'bg-[#f4faec] text-[#406a16] dark:bg-[#152708] dark:text-[#afdd7a] border border-[#ceeaad] dark:border-[#355516]',
   amber:
     'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
   rose:
@@ -25,7 +25,7 @@ const badgeVariantMap: Record<BadgeVariant, string> = {
   default:
     'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
   success:
-    'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+    'bg-[#f4faec] text-[#406a16] dark:bg-[#152708] dark:text-[#afdd7a] border border-[#ceeaad] dark:border-[#355516]',
   warning:
     'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
   info:
