@@ -4,21 +4,27 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function Modal({
-  open,
-  onClose,
-  title,
-  subtitle,
-  children,
-  maxWidth = 'max-w-2xl',
-}: {
-  open: boolean;
+interface ModalProps {
+  open?: boolean;
   onClose: () => void;
   title: string;
   subtitle?: string;
+  description?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   maxWidth?: string;
-}) {
+}
+
+export function Modal({
+  open = true,
+  onClose,
+  title,
+  subtitle,
+  description,
+  children,
+  footer,
+  maxWidth = 'max-w-2xl',
+}: ModalProps) {
   if (!open) return null;
 
   return (
@@ -31,19 +37,35 @@ export function Modal({
       >
         <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h3>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              {title}
+            </h3>
+
+            {(subtitle || description) && (
+              <p className="text-xs text-slate-500 mt-1">
+                {subtitle || description}
+              </p>
+            )}
           </div>
+
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl shrink-0"
             aria-label="Cerrar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {children}
+        <div className="space-y-4">
+          {children}
+        </div>
+
+        {footer && (
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

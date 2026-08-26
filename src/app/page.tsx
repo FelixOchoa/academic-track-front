@@ -4,7 +4,6 @@ import React, { useState, useMemo } from 'react';
 import { Navbar } from '@/components/navbar';
 import { FilterBar } from '@/components/filter-bar';
 import { getDashboardData } from '@/data/dashboardMockData';
-import { GoalsManagementTab } from '@/components/tabs/goals-management-tab';
 
 // Tab View Components
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
@@ -23,7 +22,6 @@ import {
   X,
   FileCheck,
   CheckCircle2,
-  Target
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -34,7 +32,7 @@ export default function DashboardPage() {
   const [semestre, setSemestre] = useState('Todos');
 
   // Estado de Pestañas
-  const [activeTab, setActiveTab] = useState<'academico' | 'docentes' | 'investigacion' | 'relaciones' | 'metas' | 'egresados'>('academico');
+  const [activeTab, setActiveTab] = useState<'academico' | 'docentes' | 'investigacion' | 'relaciones' | 'egresados'>('academico');
 
   // Estado del Modal de Reporte
   const [showReportModal, setShowReportModal] = useState(false);
@@ -168,17 +166,6 @@ export default function DashboardPage() {
             Impacto de Egresados ({data.egresados.tasaVinculacionLaboral})
           </button>
 
-          <button
-            onClick={() => setActiveTab('metas')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
-              activeTab === 'metas'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Target className="w-4 h-4" />
-            Gestión de Metas
-          </button>
         </div>
 
         {/* Tab Content Display */}
@@ -203,9 +190,6 @@ export default function DashboardPage() {
             <GraduatesTab data={data} />
           )}
 
-          {activeTab === 'metas' && (
-            <GoalsManagementTab />
-          )}
         </div>
 
       </main>

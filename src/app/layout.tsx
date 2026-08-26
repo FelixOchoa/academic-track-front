@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Sidebar } from '@/components/sidebar';
 
 export const metadata: Metadata = {
   title: 'Panel de Indicadores Académicos | Facultad de Ingeniería y Tecnologías',
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased">
-        {children}
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <Sidebar />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
       </body>
     </html>
   );
