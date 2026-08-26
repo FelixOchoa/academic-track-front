@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Select } from '@/components/ui/select';
-
 import { Textarea } from '@/components/ui/textarea';
 import { SemaforoBadge, estadoLabel } from '@/components/metas/semaforo-badge';
 import {
@@ -117,7 +116,29 @@ export function MetaDetailModal({
   const puedeEditarAvance = meta.estado !== 'Cancelada' && meta.estado !== 'Cumplida';
 
   return (
-    <Modal open={open} onClose={onClose} title={meta.nombre} subtitle={meta.indicadorNombre} maxWidth="max-w-3xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={meta.nombre}
+      subtitle={meta.indicadorNombre}
+      maxWidth="max-w-2xl"
+      footer={
+        <div className="flex justify-between items-center w-full">
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            onClick={handleCancelar}
+            disabled={busy || meta.estado === 'Cancelada'}
+          >
+            Cancelar meta
+          </Button>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose}>
+            Cerrar
+          </Button>
+        </div>
+      }
+    >
       <div className="space-y-6">
         {error && (
           <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900/60">
@@ -271,22 +292,6 @@ export function MetaDetailModal({
               ))}
             </ul>
           )}
-        </div>
-
-        {/* Acciones */}
-        <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-          <Button
-            type="button"
-            variant="danger"
-            size="sm"
-            onClick={handleCancelar}
-            disabled={busy || meta.estado === 'Cancelada'}
-          >
-            Cancelar meta
-          </Button>
-          <Button type="button" variant="secondary" size="sm" onClick={onClose}>
-            Cerrar
-          </Button>
         </div>
       </div>
     </Modal>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ClipboardList, RefreshCw, AlertTriangle } from 'lucide-react';
@@ -105,14 +105,14 @@ export default function ActivitiesPage() {
       <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 sm:p-3 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-xl sm:rounded-2xl text-white shadow-md shadow-emerald-500/20 shrink-0">
+            <div className="p-2.5 sm:p-3 bg-gradient-to-tr from-[#67a623] to-[#548a1a] rounded-xl sm:rounded-2xl text-white shadow-md shadow-[#67a623]/20 shrink-0">
               <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
                 Registro de Actividades y Evidencias
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
                 Proyectos, hackathons, artículos y su soporte documental
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function ActivitiesPage() {
 
           <button
             onClick={loadActivities}
-            className="p-2 sm:p-2.5 text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all shrink-0"
+            className="p-2 sm:p-2.5 text-slate-600 dark:text-slate-300 hover:text-[#67a623] hover:bg-[#f4faec] dark:hover:bg-[#152708] rounded-xl transition-all shrink-0"
             title="Recargar actividades"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -139,16 +139,16 @@ export default function ActivitiesPage() {
         />
 
         {error && (
-          <div className="mb-6 flex items-start gap-2 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs">
+          <div className="mb-6 flex items-start gap-2 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-medium">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-20 text-sm text-slate-400">Cargando actividades...</div>
+          <div className="text-center py-20 text-sm font-medium text-slate-400">Cargando actividades...</div>
         ) : activities.length === 0 ? (
-          <div className="text-center py-20 text-sm text-slate-400">
+          <div className="text-center py-20 text-sm font-medium text-slate-400">
             No hay actividades registradas con los filtros actuales.
           </div>
         ) : (

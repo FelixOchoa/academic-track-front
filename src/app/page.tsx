@@ -14,17 +14,10 @@ import {
 import i18n from '@/i18n/es.json';
 
 import { AcademicPerformanceTab } from '@/components/tabs/academic-performance-tab';
-import { FacultyTab } from '@/components/tabs/faculty-tab';
-import { ResearchTab } from '@/components/tabs/research-tab';
-import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
-import { GraduatesTab } from '@/components/tabs/graduates-tab';
 import { CohortAnalysisTab } from '@/components/tabs/cohort-analysis-tab';
 import GraduateAnalysisTab from '@/components/tabs/graduate-analysis-tab';
 
 import {
-  Award,
-  Microscope,
-  Globe,
   Users,
   Briefcase,
   Printer,
@@ -40,9 +33,6 @@ import {
 type TabType =
   | 'academic'
   | 'cohort'
-  | 'faculty'
-  | 'research'
-  | 'externalRelations'
   | 'graduates';
 
 // Cache a nivel de módulo para evitar volver a mostrar la pantalla de carga al navegar entre rutas
@@ -324,8 +314,6 @@ export default function DashboardPage() {
     );
   }
 
-  const totalAgreements = data.externalRelations.nationalAgreements + data.externalRelations.internationalAgreements;
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
       
@@ -403,42 +391,6 @@ export default function DashboardPage() {
           </button>
 
           <button
-            onClick={() => handleTabChange('faculty')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
-              activeTab === 'faculty'
-                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
-            }`}
-          >
-            <Award className="w-4 h-4" />
-            {i18n.tabs.faculty} ({data.faculty.total})
-          </button>
-
-          <button
-            onClick={() => handleTabChange('research')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
-              activeTab === 'research'
-                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
-            }`}
-          >
-            <Microscope className="w-4 h-4" />
-            {i18n.tabs.research} ({data.research.groups.length})
-          </button>
-
-          <button
-            onClick={() => handleTabChange('externalRelations')}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
-              activeTab === 'externalRelations'
-                ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
-            }`}
-          >
-            <Globe className="w-4 h-4" />
-            {i18n.tabs.externalRelations} ({totalAgreements})
-          </button>
-
-          <button
             onClick={() => handleTabChange('graduates')}
             className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all shrink-0 focus:outline-none ${
               activeTab === 'graduates'
@@ -481,18 +433,6 @@ export default function DashboardPage() {
                   periodoCohorteId={periodoCohorteId}
                 />
               )
-            )}
-
-            {activeTab === 'faculty' && (
-              <FacultyTab data={data} />
-            )}
-
-            {activeTab === 'research' && (
-              <ResearchTab data={data} />
-            )}
-
-            {activeTab === 'externalRelations' && (
-              <ExternalRelationsTab data={data} />
             )}
 
             {activeTab === 'graduates' && programaId !== null && (

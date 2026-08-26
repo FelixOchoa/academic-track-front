@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -61,51 +61,22 @@ function MetricCard({
   icon,
 }: MetricCardProps) {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-5 text-white shadow-md shadow-emerald-500/10">
-      <div className="mb-2 flex items-center justify-between text-emerald-100">
-        <span className="text-xs font-semibold uppercase tracking-wider">
+    <div className="rounded-3xl bg-gradient-to-r from-[#406a16] via-[#548a1a] to-[#67a623] p-5 text-white shadow-xl shadow-[#67a623]/10">
+      <div className="mb-2 flex items-center justify-between text-slate-100">
+        <span className="text-xs font-bold uppercase tracking-wider">
           {title}
         </span>
 
         {icon}
       </div>
 
-      <p className="text-3xl font-extrabold">{value}</p>
+      <p className="text-3xl font-black">{value}</p>
 
-      <p className="mt-1 text-xs text-emerald-100">
+      <p className="mt-1 text-xs text-slate-100/90 font-medium">
         {description}
       </p>
     </div>
   );
-}
-
-/**
- * Convierte el número de seguimiento en el período académico
- * correspondiente a partir del período de ingreso de la cohorte.
- *
- * Ejemplo:
- * Cohorte 2024-1
- * seguimiento 1 -> 2024-1
- * seguimiento 2 -> 2024-2
- * seguimiento 3 -> 2025-1
- * seguimiento 4 -> 2025-2
- */
-function calcularPeriodoAcademico(
-  anioCohorte: number,
-  semestreCohorte: string,
-  seguimiento: number
-): string {
-  const semestreInicial =
-    semestreCohorte === 'II' || semestreCohorte === '2' ? 2 : 1;
-
-  const indicePeriodo =
-    semestreInicial - 1 + (seguimiento - 1);
-
-  const anio = anioCohorte + Math.floor(indicePeriodo / 2);
-
-  const semestre = (indicePeriodo % 2) + 1;
-
-  return `${anio}-${semestre}`;
 }
 
 export function CohortAnalysisTab({
@@ -113,48 +84,25 @@ export function CohortAnalysisTab({
   periodoCohorteId,
 }: CohortAnalysisTabProps) {
   const [data, setData] = useState<SeguimientoCohorte[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [periodoCohorte, setPeriodoCohorte] = useState<{
-    anio: number;
-    semestre: string;
-  } | null>(null);
 
   const cargarDatos = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [resultado, periodos] = await Promise.all([
-        studentAlumniService.obtenerSeguimientoCohorte(
+      const response =
+        await studentAlumniService.obtenerSeguimientoCohorte(
           programaId,
           periodoCohorteId
-        ),
-        studentAlumniService.obtenerPeriodos(),
-      ]);
+        );
 
-      setData(resultado);
-
-      const periodo = periodos.find(
-        (item) => item.id === periodoCohorteId
+      setData(response);
+    } catch {
+      setError(
+        'No se pudo obtener la información del análisis de cohortes.'
       );
-
-      if (periodo) {
-        setPeriodoCohorte({
-          anio: periodo.anio,
-          semestre: periodo.semestre,
-        });
-      } else {
-        setPeriodoCohorte(null);
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'No fue posible cargar el seguimiento de la cohorte.';
-
-      setError(message);
     } finally {
       setLoading(false);
     }
@@ -164,79 +112,11 @@ export function CohortAnalysisTab({
     void cargarDatos();
   }, [programaId, periodoCohorteId]);
 
-  const resumen = useMemo(() => {
-    if (data.length === 0) {
-      return {
-        ingresaron: 0,
-        continuaron: 0,
-        cancelaciones: 0,
-        desertores: 0,
-        graduados: 0,
-      };
-    }
-
-    return data.reduce(
-      (acc, item) => ({
-        ingresaron: Math.max(
-          acc.ingresaron,
-          item.ingresaron
-        ),
-
-        continuaron: Math.max(
-          acc.continuaron,
-          item.continuaron
-        ),
-
-        cancelaciones:
-          acc.cancelaciones + item.cancelaciones,
-
-        desertores:
-          acc.desertores + item.desertores,
-
-        graduados: Math.max(
-          acc.graduados,
-          item.graduados
-        ),
-      }),
-      {
-        ingresaron: 0,
-        continuaron: 0,
-        cancelaciones: 0,
-        desertores: 0,
-        graduados: 0,
-      }
-    );
-  }, [data]);
-
-  /**
-   * Ordenamos explícitamente por seguimiento.
-   *
-   * Esto garantiza que aunque la API devuelva los registros
-   * en otro orden, la gráfica siempre mantenga la secuencia.
-   */
-  const datosOrdenados = useMemo(
-    () =>
-      [...data].sort(
-        (a, b) =>
-          a.semestreSeguimiento -
-          b.semestreSeguimiento
-      ),
-    [data]
-  );
-
   const chartData = useMemo<ChartDataItem[]>(() => {
-    return datosOrdenados.map((item) => {
-      const periodo = periodoCohorte
-        ? calcularPeriodoAcademico(
-            periodoCohorte.anio,
-            periodoCohorte.semestre,
-            item.semestreSeguimiento
-          )
-        : `Seguimiento ${item.semestreSeguimiento}`;
-
+    return data.map((item) => {
       return {
         seguimiento: item.semestreSeguimiento,
-        periodo,
+        periodo: `Semestre ${item.semestreSeguimiento}`,
         ingresaron: item.ingresaron,
         continuaron: item.continuaron,
         cancelaciones: item.cancelaciones,
@@ -246,33 +126,65 @@ export function CohortAnalysisTab({
         graduados: item.graduados,
       };
     });
-  }, [datosOrdenados, periodoCohorte]);
+  }, [data]);
+
+  const resumen = useMemo(() => {
+    if (data.length === 0) {
+      return {
+        ingresaron: 0,
+        continuaron: 0,
+        desertores: 0,
+        graduados: 0,
+      };
+    }
+
+    const primerSeguimiento = data[0];
+    const maxContinuaron = Math.max(
+      ...data.map((item) => item.continuaron)
+    );
+
+    const totalDesertores = data.reduce(
+      (acc, curr) => acc + curr.desertores,
+      0
+    );
+
+    const totalGraduados = data.reduce(
+      (acc, curr) => acc + curr.graduados,
+      0
+    );
+
+    return {
+      ingresaron: primerSeguimiento.ingresaron,
+      continuaron: maxContinuaron,
+      desertores: totalDesertores,
+      graduados: totalGraduados,
+    };
+  }, [data]);
 
   if (loading) {
     return (
-      <div className="flex min-h-64 items-center justify-center">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          Cargando seguimiento de cohorte...
-        </div>
-      </div>
+      <Card>
+        <CardContent className="flex min-h-64 items-center justify-center">
+          <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+            <RefreshCw className="h-4 w-4 animate-spin text-[#67a623]" />
+            Cargando análisis de cohortes...
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
       <Card>
-        <CardContent className="flex min-h-64 flex-col items-center justify-center gap-3">
+        <CardContent className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
           <AlertTriangle className="h-8 w-8 text-rose-500" />
-
-          <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {error}
           </p>
-
           <button
-            type="button"
             onClick={() => void cargarDatos()}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            className="rounded-xl bg-gradient-to-r from-[#67a623] to-[#548a1a] hover:from-[#548a1a] hover:to-[#406a16] px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-[#67a623]/20 transition-all"
           >
             Reintentar
           </button>
@@ -285,7 +197,7 @@ export function CohortAnalysisTab({
     return (
       <Card>
         <CardContent className="flex min-h-64 items-center justify-center">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 font-medium">
             No existen datos para la cohorte seleccionada.
           </p>
         </CardContent>
@@ -301,7 +213,7 @@ export function CohortAnalysisTab({
           value={resumen.ingresaron}
           description="Estudiantes de la cohorte"
           icon={
-            <Users className="h-5 w-5 text-emerald-200" />
+            <Users className="h-5 w-5 text-[#afdd7a]" />
           }
         />
 
@@ -310,7 +222,7 @@ export function CohortAnalysisTab({
           value={resumen.continuaron}
           description="Mayor permanencia registrada"
           icon={
-            <CheckCircle className="h-5 w-5 text-emerald-200" />
+            <CheckCircle className="h-5 w-5 text-[#afdd7a]" />
           }
         />
 
@@ -319,7 +231,7 @@ export function CohortAnalysisTab({
           value={resumen.desertores}
           description="Deserciones registradas"
           icon={
-            <TrendingDown className="h-5 w-5 text-emerald-200" />
+            <TrendingDown className="h-5 w-5 text-[#afdd7a]" />
           }
         />
 
@@ -328,7 +240,7 @@ export function CohortAnalysisTab({
           value={resumen.graduados}
           description="Graduados registrados"
           icon={
-            <GraduationCap className="h-5 w-5 text-emerald-200" />
+            <GraduationCap className="h-5 w-5 text-[#afdd7a]" />
           }
         />
       </section>
@@ -403,14 +315,14 @@ export function CohortAnalysisTab({
                         return label;
                       }
 
-                      return `${label} · Seguimiento ${item.seguimiento}`;
+                      return `${label} – Semestre de seguimiento ${item.seguimiento}`;
                     }}
                   />
 
                   <Bar
                     dataKey="continuaron"
                     name="Continuaron"
-                    fill="#10b981"
+                    fill="#67a623"
                     radius={[4, 4, 0, 0]}
                   />
 
@@ -431,7 +343,7 @@ export function CohortAnalysisTab({
                   <Bar
                     dataKey="graduados"
                     name="Graduados"
-                    fill="#059669"
+                    fill="#548a1a"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -457,8 +369,8 @@ export function CohortAnalysisTab({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                  <th className="px-4 py-3">
+                <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40">
+                  <th className="px-4 py-3 rounded-l-xl">
                     Período
                   </th>
 
@@ -490,7 +402,7 @@ export function CohortAnalysisTab({
                     Desertores
                   </th>
 
-                  <th className="px-4 py-3">
+                  <th className="px-4 py-3 rounded-r-xl">
                     Graduados
                   </th>
                 </tr>
@@ -507,14 +419,14 @@ export function CohortAnalysisTab({
                     </td>
 
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
-                      {item.seguimiento}
+                      Semestre {item.seguimiento}
                     </td>
 
                     <td className="px-4 py-3">
                       {item.ingresaron}
                     </td>
 
-                    <td className="px-4 py-3 font-semibold text-emerald-600">
+                    <td className="px-4 py-3 font-semibold text-[#67a623]">
                       {item.continuaron}
                     </td>
 
@@ -534,7 +446,7 @@ export function CohortAnalysisTab({
                       {item.desertores}
                     </td>
 
-                    <td className="px-4 py-3 font-semibold text-emerald-700">
+                    <td className="px-4 py-3 font-semibold text-[#548a1a]">
                       {item.graduados}
                     </td>
                   </tr>

@@ -1,24 +1,32 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Modal } from '@/components/ui/modal';
-import { Field, Input, Select, Textarea } from '@/components/ui/form-controls';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/form-controls';
+import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  actualizarMeta,
+  crearMeta,
+} from '@/services/metasService';
 import { obtenerIndicadores } from '@/services/indicadoresService';
-import { crearMeta, actualizarMeta } from '@/services/metasService';
 import { IndicadorDto, MetaDto, Periodicidad } from '@/types/metas';
-
-const PERIODICIDADES: Periodicidad[] = ['Mensual', 'Semestral', 'Anual'];
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onSaved: (meta: MetaDto) => void;
-  /** Si se pasa, el formulario edita esta meta en lugar de crear una nueva. */
   metaToEdit?: MetaDto | null;
-  /** ID del programa activo en el filtro global del dashboard. */
-  defaultProgramaId: number;
+  defaultProgramaId?: number;
 }
+
+const PERIODICIDADES: Periodicidad[] = [
+  'Mensual',
+  'Semestral',
+  'Anual',
+];
 
 const emptyForm = {
   programaId: '',
@@ -50,7 +58,7 @@ export function MetaFormModal({ open, onClose, onSaved, metaToEdit, defaultProgr
     if (metaToEdit) {
       setForm({
         programaId: String(metaToEdit.programaId),
-        indicadorId: '', // no editable: el backend no permite cambiarlo
+        indicadorId: '',
         nombre: metaToEdit.nombre,
         descripcion: metaToEdit.descripcion ?? '',
         responsable: metaToEdit.responsable,
@@ -121,10 +129,21 @@ export function MetaFormModal({ open, onClose, onSaved, metaToEdit, defaultProgr
       onClose={onClose}
       title={isEdit ? 'Editar meta' : 'Nueva meta'}
       subtitle={isEdit ? metaToEdit?.nombre : 'Registrar una meta de programa'}
+      maxWidth="max-w-2xl"
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="meta-form" disabled={saving}>
+            {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear meta'}
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form id="meta-form" onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900">
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-medium border border-rose-200 dark:border-rose-900/60">
             {error}
           </div>
         )}
@@ -256,15 +275,6 @@ export function MetaFormModal({ open, onClose, onSaved, metaToEdit, defaultProgr
               onChange={(e) => update('valorEsperado', e.target.value)}
             />
           </Field>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={saving}>
-            {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear meta'}
-          </Button>
         </div>
       </form>
     </Modal>
