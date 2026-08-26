@@ -242,7 +242,7 @@ export function AcademicPerformanceTab({ data, periodFilter, semesterFilter }: T
                 <div className="flex items-center justify-between">
                   <CardTitle>
                     <UserCheck className="w-5 h-5 text-[#67a623]" />
-                    Embudo de Admisión (Inscritos vs. Admitidos)
+                    Proceso de Admisión (Inscritos vs. Admitidos)
                   </CardTitle>
                   <div className="group relative cursor-help">
                     <Info className="w-4.5 h-4.5 text-slate-400 hover:text-[#67a623] transition-colors" />

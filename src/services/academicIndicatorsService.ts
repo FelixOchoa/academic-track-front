@@ -1,11 +1,17 @@
 ﻿import { DashboardData } from '@/types/dashboardTypes';
 
 const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://169.58.185.218:5000/api';
+    }
     return `http://${host}:5000/api`;
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  return 'http://169.58.185.218:5000/api';
 };
 
 export interface UploadResult {
