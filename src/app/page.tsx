@@ -20,6 +20,9 @@ import { ResearchTab } from '@/components/tabs/research-tab';
 import { ExternalRelationsTab } from '@/components/tabs/external-relations-tab';
 import { GraduatesTab } from '@/components/tabs/graduates-tab';
 import { CohortAnalysisTab } from '@/components/tabs/cohort-analysis-tab';
+import GraduateAnalysisTab from '@/components/tabs/graduate-analysis-tab';
+
+
 
 import {
   Award,
@@ -462,7 +465,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <FilterBar
+<FilterBar
   faculty={faculty}
   program={program}
   period={period}
@@ -473,6 +476,9 @@ useEffect(() => {
   onPeriodChange={handlePeriodChange}
   onSemesterChange={handleSemesterChange}
   onResetFilters={handleResetFilters}
+  showFaculty={true}
+showPeriod={activeTab !== 'graduates'}
+showSemester={activeTab === 'academic'}
 />
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none border-b border-slate-200/90 dark:border-slate-800">
@@ -610,8 +616,8 @@ useEffect(() => {
               <ExternalRelationsTab data={data} />
             )}
 
-            {activeTab === 'graduates' && (
-              <GraduatesTab data={data} />
+            {activeTab === 'graduates' && programaId !== null && (
+              <GraduateAnalysisTab programaId={programaId} />
             )}
           </div>
         )}
