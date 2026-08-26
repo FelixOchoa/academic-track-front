@@ -387,7 +387,7 @@ export default function DashboardPage() {
             }`}
           >
             <Users className="w-4 h-4" />
-            Análisis de Cohortes
+            Análisis de Cortes
           </button>
 
           <button

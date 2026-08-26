@@ -101,7 +101,7 @@ export function CohortAnalysisTab({
       setData(response);
     } catch {
       setError(
-        'No se pudo obtener la información del análisis de cohortes.'
+        'No se pudo obtener la información del análisis de cortes.'
       );
     } finally {
       setLoading(false);
@@ -167,7 +167,7 @@ export function CohortAnalysisTab({
         <CardContent className="flex min-h-64 items-center justify-center">
           <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
             <RefreshCw className="h-4 w-4 animate-spin text-[#67a623]" />
-            Cargando análisis de cohortes...
+            Cargando análisis de cortes...
           </div>
         </CardContent>
       </Card>
