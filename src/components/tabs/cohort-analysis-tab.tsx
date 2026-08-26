@@ -101,7 +101,7 @@ export function CohortAnalysisTab({
       setData(response);
     } catch {
       setError(
-        'No se pudo obtener la información del análisis de cohortes.'
+        'No se pudo obtener la información del análisis de cortes.'
       );
     } finally {
       setLoading(false);
