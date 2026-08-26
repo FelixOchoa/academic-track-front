@@ -1,10 +1,14 @@
-// Cliente HTTP minimalista para hablar con AcademicTrack.API.
+﻿// Cliente HTTP minimalista para hablar con AcademicTrack.API.
 // No se agrega axios a propósito: fetch nativo es suficiente y evita una
 // dependencia nueva en el proyecto.
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:5000';
-  console.log('API_BASE_URL =', API_BASE_URL);
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return `http://${host}:5000`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://localhost:5000';
+};
 
 export class ApiError extends Error {
   status: number;
@@ -16,7 +20,8 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const baseUrl = getApiBaseUrl();
+  const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

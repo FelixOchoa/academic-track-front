@@ -1,4 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+﻿function getBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return `http://${host}:5000`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+}
 
 export class ApiError extends Error {
   status: number;
@@ -11,11 +17,8 @@ export class ApiError extends Error {
 }
 
 function buildUrl(path: string, params?: Record<string, string | number | undefined>): string {
-  if (!API_URL) {
-    throw new ApiError(0, 'NEXT_PUBLIC_API_URL no está configurada.');
-  }
-
-  const url = new URL(path, API_URL);
+  const baseUrl = getBaseUrl();
+  const url = new URL(path, baseUrl);
 
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -54,7 +57,7 @@ async function request<T>(
       },
     });
   } catch (error) {
-    throw new ApiError(0, `No se pudo conectar con el servidor (${API_URL}). Verifica que el backend esté disponible.`);
+    throw new ApiError(0, `No se pudo conectar con el servidor. Verifica que el backend esté disponible.`);
   }
 
   if (!response.ok) {

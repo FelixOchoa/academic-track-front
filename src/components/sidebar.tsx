@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { GraduationCap, LayoutDashboard, ClipboardList, Target } from 'lucide-re
 const NAV_ITEMS = [
   { href: '/', label: 'Panel de Indicadores', icon: LayoutDashboard },
   { href: '/activities', label: 'Actividades y Evidencias', icon: ClipboardList },
-  { href: '/goals', label: 'Metas', icon: Target },
+  { href: '/goals', label: 'Metas Institucionales', icon: Target },
 ];
 
 function NavLink({
@@ -29,8 +29,8 @@ function NavLink({
       href={href}
       className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 ${
         active
-          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
-          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          ? 'bg-gradient-to-r from-[#67a623] to-[#548a1a] text-white shadow-md shadow-[#67a623]/20'
+          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'
       } ${className ?? ''}`}
     >
       <Icon className="w-4 h-4 shrink-0" />
@@ -45,22 +45,22 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop rail */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-6 gap-6">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-6 gap-6 shadow-sm">
         <div className="flex items-center gap-2.5 px-2">
-          <div className="p-2.5 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-xl text-white shadow-md shadow-emerald-500/20 shrink-0">
+          <div className="p-2.5 bg-gradient-to-tr from-[#67a623] to-[#548a1a] rounded-xl text-white shadow-md shadow-[#67a623]/20 shrink-0">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-black text-slate-900 dark:text-white leading-tight truncate">
               AcademicTrack
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-              Fac. Ingeniería y Tecnologías
+            <p className="text-[11px] font-semibold text-[#548a1a] dark:text-[#afdd7a] truncate">
+              Facultad de Ingeniería
             </p>
           </div>
         </div>
 
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1.5">
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.href} {...item} active={pathname === item.href} />
           ))}
