@@ -69,28 +69,28 @@ export interface ActivitiesFilters {
 }
 
 export function getActivities(filters?: ActivitiesFilters): Promise<Activity[]> {
-  return http.get<Activity[]>('/activities', {
+  return http.get<Activity[]>('/api/activities', {
     programId: filters?.programId,
     type: filters?.type,
   });
 }
 
 export function getActivityById(id: number): Promise<Activity> {
-  return http.get<Activity>(`/activities/${id}`);
+  return http.get<Activity>(`/api/activities/${id}`);
 }
 
 export function createActivity(dto: CreateActivityDto): Promise<Activity> {
-  return http.post<Activity>('/activities', dto);
+  return http.post<Activity>('/api/activities', dto);
 }
 
 export function updateActivity(id: number, dto: UpdateActivityDto): Promise<Activity> {
-  return http.put<Activity>(`/activities/${id}`, dto);
+  return http.put<Activity>(`/api/activities/${id}`, dto);
 }
 
 export function deleteActivity(id: number): Promise<void> {
-  return http.delete<void>(`/activities/${id}`);
+  return http.delete<void>(`/api/activities/${id}`);
 }
 
 export function addEvidence(activityId: number, dto: AddEvidenceDto): Promise<Activity> {
-  return http.post<Activity>(`/activities/${activityId}/evidences`, dto);
+  return http.post<Activity>(`/api/activities/${activityId}/evidences`, dto);
 }
