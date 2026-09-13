@@ -1,17 +1,10 @@
-﻿import { SeguimientoCohorte, SeguimientoEgresado, AnalisisEgresado } from '@/types/student-alumni';
+import { SeguimientoCohorte, SeguimientoEgresado, AnalisisEgresado } from '@/types/student-alumni';
 
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
   }
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://169.58.185.218:5000/api';
-    }
-    return `http://${host}:5000/api`;
-  }
-  return 'http://169.58.185.218:5000/api';
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl().replace(/\/+$/, '');

@@ -1,4 +1,4 @@
-﻿// Cliente HTTP minimalista para hablar con AcademicTrack.API.
+// Cliente HTTP minimalista para hablar con AcademicTrack.API.
 // No se agrega axios a propósito: fetch nativo es suficiente y evita una
 // dependencia nueva en el proyecto.
 
@@ -6,14 +6,7 @@ const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api$/, '');
   }
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://169.58.185.218:5000';
-    }
-    return `http://${host}:5000`;
-  }
-  return 'http://169.58.185.218:5000';
+  return '';
 };
 
 export class ApiError extends Error {

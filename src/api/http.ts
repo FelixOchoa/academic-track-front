@@ -1,15 +1,11 @@
-﻿function getBaseUrl(): string {
+function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api$/, '');
   }
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://169.58.185.218:5000';
-    }
-    return `http://${host}:5000`;
+    return window.location.origin;
   }
-  return 'http://169.58.185.218:5000';
+  return 'http://localhost';
 }
 
 export class ApiError extends Error {
