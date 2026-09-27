@@ -3,13 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { GraduationCap, LayoutDashboard, ClipboardList, Target, LogOut, User as UserIcon } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, ClipboardList, Target, LogOut, User as UserIcon, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Panel de Indicadores', icon: LayoutDashboard },
   { href: '/activities', label: 'Actividades y Evidencias', icon: ClipboardList },
   { href: '/goals', label: 'Metas Institucionales', icon: Target },
+  { href: '/roles', label: 'Roles y Permisos', icon: ShieldCheck, permission: 'ROLES_MANAGE' },
 ];
 
 function NavLink({
@@ -43,11 +45,17 @@ function NavLink({
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { hasPermission } = usePermissions();
 
   // No renderizar el Sidebar en la pantalla de login
   if (pathname === '/login') {
     return null;
   }
+
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
 
   return (
     <>
@@ -68,7 +76,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex flex-col gap-1.5">
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink key={item.href} {...item} active={pathname === item.href} />
           ))}
         </nav>
@@ -104,7 +112,7 @@ export function Sidebar() {
       {/* Mobile top bar */}
       <nav className="flex md:hidden sticky top-0 z-40 items-center justify-between px-3 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1 min-w-0">
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink key={item.href} {...item} active={pathname === item.href} className="py-2" />
           ))}
         </div>
