@@ -1,8 +1,10 @@
 import { DashboardData } from '@/types/dashboardTypes';
+import { getToken } from '@/lib/auth-token';
 
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    const url = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    return url.endsWith('/api') ? url : `${url}/api`;
   }
   return '/api';
 };
@@ -20,12 +22,14 @@ export interface UploadResult {
 export async function fetchDashboardData(program: string, period: string): Promise<DashboardData> {
   const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}/academic-indicators/dashboard?program=${encodeURIComponent(program)}&period=${encodeURIComponent(period)}`;
+  const token = getToken();
   
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       cache: 'no-store',
     });
@@ -52,6 +56,7 @@ export async function uploadIndicatorFile(
 ): Promise<UploadResult> {
   const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}/academic-indicators/upload`;
+  const token = getToken();
   const formData = new FormData();
   formData.append('indicatorType', indicatorType);
   formData.append('program', program);
@@ -61,6 +66,9 @@ export async function uploadIndicatorFile(
   try {
     const response = await fetch(url, {
       method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: formData,
     });
 

@@ -1,3 +1,5 @@
+import { getToken, removeToken } from '@/lib/auth-token';
+
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api$/, '');
@@ -49,17 +51,28 @@ async function request<T>(
   const { params, headers, ...rest } = options;
   const url = buildUrl(path, params);
 
+  const token = getToken();
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   let response: Response;
   try {
     response = await fetch(url, {
       ...rest,
       headers: {
         ...(rest.body ? { 'Content-Type': 'application/json' } : {}),
+        ...authHeaders,
         ...headers,
       },
     });
   } catch (error) {
     throw new ApiError(0, `No se pudo conectar con el servidor. Verifica que el backend esté disponible.`);
+  }
+
+  if (response.status === 401) {
+    removeToken();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
+    }
   }
 
   if (!response.ok) {

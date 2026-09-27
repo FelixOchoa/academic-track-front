@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { GraduationCap, LayoutDashboard, ClipboardList, Target } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, ClipboardList, Target, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Panel de Indicadores', icon: LayoutDashboard },
@@ -41,6 +42,12 @@ function NavLink({
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  // No renderizar el Sidebar en la pantalla de login
+  if (pathname === '/login') {
+    return null;
+  }
 
   return (
     <>
@@ -65,13 +72,49 @@ export function Sidebar() {
             <NavLink key={item.href} {...item} active={pathname === item.href} />
           ))}
         </nav>
+
+        {/* Sección de Usuario y Logout */}
+        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col gap-3">
+          {user && (
+            <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0">
+                {user.fullName ? user.fullName.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {user.fullName || user.username}
+                </p>
+                <p className="text-[10px] font-semibold text-[#548a1a] dark:text-[#afdd7a] truncate">
+                  {user.role}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition-colors"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
       </aside>
 
       {/* Mobile top bar */}
-      <nav className="flex md:hidden sticky top-0 z-40 items-center gap-1.5 overflow-x-auto px-3 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 scrollbar-none">
-        {NAV_ITEMS.map((item) => (
-          <NavLink key={item.href} {...item} active={pathname === item.href} className="py-2" />
-        ))}
+      <nav className="flex md:hidden sticky top-0 z-40 items-center justify-between px-3 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1 min-w-0">
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.href} {...item} active={pathname === item.href} className="py-2" />
+          ))}
+        </div>
+        <button
+          onClick={logout}
+          title="Cerrar sesión"
+          className="p-2 ml-2 text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 rounded-lg shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </nav>
     </>
   );

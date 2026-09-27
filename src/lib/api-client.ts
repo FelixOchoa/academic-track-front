@@ -1,3 +1,5 @@
+import { getToken, removeToken } from './auth-token';
+
 // Cliente HTTP minimalista para hablar con AcademicTrack.API.
 // No se agrega axios a propósito: fetch nativo es suficiente y evita una
 // dependencia nueva en el proyecto.
@@ -20,24 +22,32 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const baseUrl = getApiBaseUrl();
+  const token = getToken();
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...authHeaders,
       ...(options.headers || {}),
     },
-    // El backend expuesto por Kestrel/Docker no usa cookies de sesión;
-    // se deja explícito para no arrastrar credenciales por accidente.
     credentials: 'omit',
   });
 
+  if (res.status === 401) {
+    removeToken();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
+    }
+  }
+
   if (!res.ok) {
-    // El middleware de excepciones del backend responde con
-    // application/problem+json: { status, detail }
     let detail = `Error ${res.status} al comunicarse con el servidor.`;
     try {
       const problem = await res.json();
       if (problem?.detail) detail = problem.detail;
+      else if (problem?.message) detail = problem.message;
     } catch {
       // La respuesta no traía cuerpo JSON; se usa el mensaje genérico.
     }
