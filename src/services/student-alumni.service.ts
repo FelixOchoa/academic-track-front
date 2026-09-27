@@ -1,13 +1,23 @@
 import { SeguimientoCohorte, SeguimientoEgresado, AnalisisEgresado } from '@/types/student-alumni';
+import { getToken } from '@/lib/auth-token';
 
 const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    const url = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    return url.endsWith('/api') ? url : `${url}/api`;
   }
   return '/api';
 };
 
-const API_BASE_URL = getApiBaseUrl().replace(/\/+$/, '');
+const API_BASE_URL = getApiBaseUrl();
+
+const getAuthHeaders = (): Record<string, string> => {
+  const token = getToken();
+  return {
+    Accept: 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 export interface Programa {
   id: number;
@@ -38,9 +48,7 @@ class StudentAlumniService {
   async obtenerProgramas(): Promise<Programa[]> {
     const response = await fetch(`${API_BASE_URL}/programas`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: getAuthHeaders(),
       cache: 'no-store',
     });
 
@@ -60,9 +68,7 @@ class StudentAlumniService {
   async obtenerPeriodos(): Promise<Periodo[]> {
     const response = await fetch(`${API_BASE_URL}/periodos`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: getAuthHeaders(),
       cache: 'no-store',
     });
 
@@ -97,9 +103,7 @@ class StudentAlumniService {
       `${API_BASE_URL}/seguimiento-cohorte/${programaId}/${periodoCohorteId}`,
       {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+        headers: getAuthHeaders(),
         cache: 'no-store',
       }
     );
@@ -142,9 +146,7 @@ class StudentAlumniService {
       `${API_BASE_URL}/seguimiento-cohorte/comparacion/${programaId}`,
       {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+        headers: getAuthHeaders(),
         cache: 'no-store',
       }
     );
@@ -187,9 +189,7 @@ class StudentAlumniService {
       `${API_BASE_URL}/seguimiento-egresado/${programaId}`,
       {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+        headers: getAuthHeaders(),
         cache: 'no-store',
       }
     );
@@ -237,9 +237,7 @@ class StudentAlumniService {
       `${API_BASE_URL}/seguimiento-egresado/analisis/${programaId}/${anioGraduacion}`,
       {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+        headers: getAuthHeaders(),
         cache: 'no-store',
       }
     );
