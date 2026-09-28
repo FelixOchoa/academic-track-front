@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { ClipboardList, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ClipboardList, RefreshCw, AlertTriangle, ShieldAlert } from 'lucide-react';
 import {
   Activity,
   ActivityType,
@@ -21,6 +21,7 @@ import { ActivityCard } from '@/components/activities/activity-card';
 import { ActivityFormModal } from '@/components/activities/activity-form-modal';
 import { EvidenceFormModal } from '@/components/activities/evidence-form-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { usePermissions } from '@/hooks/usePermissions';
 
 type ModalState =
   | { kind: 'none' }
@@ -30,8 +31,13 @@ type ModalState =
   | { kind: 'delete'; activity: Activity };
 
 export default function ActivitiesPage() {
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const { hasPermission, isAdmin } = usePermissions();
+  const canView = isAdmin || hasPermission('ACTIVITIES_VIEW');
+  const canCreate = isAdmin || hasPermission('ACTIVITIES_CREATE');
+  const canEdit = isAdmin || hasPermission('ACTIVITIES_EDIT');
+  const canDelete = isAdmin || hasPermission('ACTIVITIES_DELETE');
 
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +49,13 @@ export default function ActivitiesPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    getPrograms().then(setPrograms);
-  }, []);
+    if (canView) {
+      getPrograms().then(setPrograms).catch(() => {});
+    }
+  }, [canView]);
 
   const loadActivities = useCallback(() => {
+    if (!canView) return;
     setLoading(true);
     setError(null);
     getActivities({
@@ -60,11 +69,15 @@ export default function ActivitiesPage() {
         setActivities([]);
       })
       .finally(() => setLoading(false));
-  }, [programIdFilter, typeFilter]);
+  }, [programIdFilter, typeFilter, canView]);
 
   useEffect(() => {
-    loadActivities();
-  }, [loadActivities]);
+    if (canView) {
+      loadActivities();
+    } else {
+      setLoading(false);
+    }
+  }, [loadActivities, canView]);
 
   const handleCreate = async (dto: CreateActivityDto | UpdateActivityDto) => {
     await createActivity(dto as CreateActivityDto);
@@ -99,6 +112,24 @@ export default function ActivitiesPage() {
       setDeleting(false);
     }
   };
+
+  if (!canView) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900/60 p-8 text-center max-w-lg mx-auto shadow-xl">
+          <div className="w-16 h-16 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+            Acceso Denegado
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Tu rol actual no tiene el permiso requerido (`ACTIVITIES_VIEW`) para ver o interactuar con el módulo de actividades y evidencias.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-16">
@@ -135,7 +166,7 @@ export default function ActivitiesPage() {
           type={typeFilter}
           onProgramIdChange={setProgramIdFilter}
           onTypeChange={setTypeFilter}
-          onNewActivity={() => setModal({ kind: 'create' })}
+          onNewActivity={canCreate ? () => setModal({ kind: 'create' }) : undefined}
         />
 
         {error && (
@@ -157,16 +188,16 @@ export default function ActivitiesPage() {
               <ActivityCard
                 key={activity.id}
                 activity={activity}
-                onEdit={() => setModal({ kind: 'edit', activity })}
-                onDelete={() => setModal({ kind: 'delete', activity })}
-                onAddEvidence={() => setModal({ kind: 'evidence', activity })}
+                onEdit={canEdit ? () => setModal({ kind: 'edit', activity }) : undefined}
+                onDelete={canDelete ? () => setModal({ kind: 'delete', activity }) : undefined}
+                onAddEvidence={canEdit || canCreate ? () => setModal({ kind: 'evidence', activity }) : undefined}
               />
             ))}
           </div>
         )}
       </main>
 
-      {modal.kind === 'create' && (
+      {modal.kind === 'create' && canCreate && (
         <ActivityFormModal
           mode="create"
           programs={programs}
@@ -175,7 +206,7 @@ export default function ActivitiesPage() {
         />
       )}
 
-      {modal.kind === 'edit' && (
+      {modal.kind === 'edit' && canEdit && (
         <ActivityFormModal
           mode="edit"
           activity={modal.activity}
@@ -185,7 +216,7 @@ export default function ActivitiesPage() {
         />
       )}
 
-      {modal.kind === 'evidence' && (
+      {modal.kind === 'evidence' && (canEdit || canCreate) && (
         <EvidenceFormModal
           activityName={modal.activity.name}
           onClose={() => setModal({ kind: 'none' })}
@@ -193,7 +224,7 @@ export default function ActivitiesPage() {
         />
       )}
 
-      {modal.kind === 'delete' && (
+      {modal.kind === 'delete' && canDelete && (
         <ConfirmDialog
           title="Eliminar Actividad"
           description={`¿Seguro que deseas eliminar "${modal.activity.name}"? Esta acción no se puede deshacer.`}

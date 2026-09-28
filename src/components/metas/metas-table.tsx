@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Pencil } from 'lucide-react';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { SemaforoBadge, estadoLabel } from '@/components/metas/semaforo-badge';
@@ -11,7 +11,7 @@ export function MetasTable({
 }: {
   metas: MetaDto[];
   onVerDetalle: (meta: MetaDto) => void;
-  onEditar: (meta: MetaDto) => void;
+  onEditar?: (meta: MetaDto) => void;
 }) {
   if (metas.length === 0) {
     return (
@@ -62,16 +62,18 @@ export function MetasTable({
                 </div>
               </td>
               <td className="py-3.5 px-4 text-right">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditar(meta);
-                  }}
-                  className="p-1.5 text-slate-400 hover:text-[#67a623] rounded-lg hover:bg-[#f4faec] dark:hover:bg-[#152708] transition-colors"
-                  aria-label="Editar meta"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
+                {onEditar && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditar(meta);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-[#67a623] rounded-lg hover:bg-[#f4faec] dark:hover:bg-[#152708] transition-colors"
+                    aria-label="Editar meta"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </td>
             </tr>
           ))}

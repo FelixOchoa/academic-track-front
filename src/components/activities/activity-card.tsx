@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ActivityTypeBadge } from '@/components/activities/activity-type-badge';
@@ -7,9 +7,9 @@ import { CalendarDays, MapPin, User, Users, GraduationCap, Link as LinkIcon, Pen
 
 interface ActivityCardProps {
   activity: Activity;
-  onEdit: () => void;
-  onDelete: () => void;
-  onAddEvidence: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onAddEvidence?: () => void;
 }
 
 export function ActivityCard({ activity, onEdit, onDelete, onAddEvidence }: ActivityCardProps) {
@@ -24,17 +24,25 @@ export function ActivityCard({ activity, onEdit, onDelete, onAddEvidence }: Acti
           <CardDescription>Programa #{activity.programId}</CardDescription>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Button variant="ghost" onClick={onAddEvidence} title="Agregar evidencia" className="px-2.5 hover:text-[#67a623]">
-            <FilePlus2 className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" onClick={onEdit} title="Editar actividad" className="px-2.5 hover:text-[#67a623]">
-            <Pencil className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" onClick={onDelete} title="Eliminar actividad" className="px-2.5 hover:text-rose-600">
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
+        {(onAddEvidence || onEdit || onDelete) && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onAddEvidence && (
+              <Button variant="ghost" onClick={onAddEvidence} title="Agregar evidencia" className="px-2.5 hover:text-[#67a623]">
+                <FilePlus2 className="w-4 h-4" />
+              </Button>
+            )}
+            {onEdit && (
+              <Button variant="ghost" onClick={onEdit} title="Editar actividad" className="px-2.5 hover:text-[#67a623]">
+                <Pencil className="w-4 h-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button variant="ghost" onClick={onDelete} title="Eliminar actividad" className="px-2.5 hover:text-rose-600">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-4">

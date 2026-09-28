@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
@@ -27,8 +27,10 @@ import {
   BookOpen,
   Loader2,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  ShieldAlert
 } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 type TabType =
   | 'academic'
@@ -46,6 +48,9 @@ let cachedPeriodoCohorteId: number | null = null;
 let isAppInitialized = false;
 
 export default function DashboardPage() {
+  const { hasPermission, isAdmin } = usePermissions();
+  const canViewIndicators = isAdmin || hasPermission('INDICATORS_VIEW');
+
   const [isInitialLoading, setIsInitialLoading] = useState(!isAppInitialized);
 
   const [faculty] = useState('Facultad de Ingeniería y Tecnologías');
@@ -114,6 +119,11 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    if (!canViewIndicators) {
+      setIsInitialLoading(false);
+      return;
+    }
+
     if (isAppInitialized && cachedDashboardData) {
       return;
     }
@@ -254,6 +264,24 @@ export default function DashboardPage() {
   };
 
   const availablePeriods = periodos.map((p) => `${p.anio}-${p.semestre === 'I' ? '1' : '2'}`);
+
+  if (!canViewIndicators) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900/60 p-8 text-center max-w-lg mx-auto shadow-xl">
+          <div className="w-16 h-16 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+            Acceso Denegado
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Tu rol actual no tiene el permiso requerido (`INDICATORS_VIEW`) para consultar los indicadores académicos y paneles de seguimiento.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isInitialLoading) {
     return (
