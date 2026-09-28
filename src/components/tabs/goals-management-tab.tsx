@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -18,10 +18,14 @@ import { MetasTable } from '@/components/metas/metas-table';
 import { ApiError } from '@/lib/api-client';
 import { obtenerMetas, obtenerResumenMetas } from '@/services/metasService';
 import { MetaDto, ResumenMetasDto } from '@/types/metas';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const PAGE_SIZE = 10;
 
 export function GoalsManagementTab({ programaId }: { programaId?: number }) {
+  const { hasPermission, isAdmin } = usePermissions();
+  const canManageGoals = isAdmin || hasPermission('GOALS_MANAGE');
+
   const [metas, setMetas] = useState<MetaDto[]>([]);
   const [resumen, setResumen] = useState<ResumenMetasDto | null>(null);
   const [page, setPage] = useState(1);
@@ -153,15 +157,17 @@ export function GoalsManagementTab({ programaId }: { programaId?: number }) {
               <Button variant="secondary" size="sm" onClick={cargarDatos} aria-label="Refrescar">
                 <RefreshCw className="w-3.5 h-3.5 text-[#67a623]" />
               </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setMetaEnEdicion(null);
-                  setFormOpen(true);
-                }}
-              >
-                <Plus className="w-3.5 h-3.5" /> Nueva meta
-              </Button>
+              {canManageGoals && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setMetaEnEdicion(null);
+                    setFormOpen(true);
+                  }}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Nueva meta
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -179,10 +185,14 @@ export function GoalsManagementTab({ programaId }: { programaId?: number }) {
               <MetasTable
                 metas={metas}
                 onVerDetalle={setMetaSeleccionada}
-                onEditar={(meta) => {
-                  setMetaEnEdicion(meta);
-                  setFormOpen(true);
-                }}
+                onEditar={
+                  canManageGoals
+                    ? (meta) => {
+                        setMetaEnEdicion(meta);
+                        setFormOpen(true);
+                      }
+                    : undefined
+                }
               />
 
               {totalPages > 1 && (

@@ -7,11 +7,19 @@ import { GraduationCap, LayoutDashboard, ClipboardList, Target, LogOut, User as 
 import { useAuth } from '@/context/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 
-const NAV_ITEMS = [
-  { href: '/', label: 'Panel de Indicadores', icon: LayoutDashboard },
-  { href: '/activities', label: 'Actividades y Evidencias', icon: ClipboardList },
-  { href: '/goals', label: 'Metas Institucionales', icon: Target },
-  { href: '/roles', label: 'Roles y Permisos', icon: ShieldCheck, permission: 'ROLES_MANAGE' },
+interface NavItemConfig {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  permission?: string;
+  permissionAny?: string[];
+}
+
+const NAV_ITEMS: NavItemConfig[] = [
+  { href: '/', label: 'Panel de Indicadores', icon: LayoutDashboard, permission: 'INDICATORS_VIEW' },
+  { href: '/activities', label: 'Actividades y Evidencias', icon: ClipboardList, permission: 'ACTIVITIES_VIEW' },
+  { href: '/goals', label: 'Metas Institucionales', icon: Target, permission: 'GOALS_VIEW' },
+  { href: '/roles', label: 'Roles y Permisos', icon: ShieldCheck, permissionAny: ['ROLES_MANAGE', 'USERS_ASSIGN'] },
 ];
 
 function NavLink({
@@ -45,7 +53,7 @@ function NavLink({
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { hasPermission } = usePermissions();
+  const { hasPermission, hasAnyPermission } = usePermissions();
 
   // No renderizar el Sidebar en la pantalla de login
   if (pathname === '/login') {
@@ -53,8 +61,9 @@ export function Sidebar() {
   }
 
   const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (!item.permission) return true;
-    return hasPermission(item.permission);
+    if (item.permission && !hasPermission(item.permission)) return false;
+    if (item.permissionAny && !hasAnyPermission(item.permissionAny)) return false;
+    return true;
   });
 
   return (

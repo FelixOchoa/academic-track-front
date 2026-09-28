@@ -5,6 +5,7 @@ import {
   CreateRolePayload,
   UpdateRolePayload,
   UserWithRole,
+  CreateUserData,
 } from '@/types/roles';
 
 export const roleService = {
@@ -38,5 +39,9 @@ export const roleService = {
 
   async assignUserRole(userId: number, roleId: number): Promise<UserWithRole> {
     return await http.put<UserWithRole>(`/api/roles/users/${userId}`, { roleId });
+  },
+
+  async createUser(payload: CreateUserData): Promise<UserWithRole> {
+    return await http.post<UserWithRole>('/api/roles/users', payload);
   },
 };

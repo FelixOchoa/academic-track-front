@@ -37,3 +37,11 @@ export interface UserWithRole {
   roleName: string;
   isActive: boolean;
 }
+
+export interface CreateUserData {
+  username: string;
+  email: string;
+  fullName: string;
+  password: string;
+  roleId?: number;
+}

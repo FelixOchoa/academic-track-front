@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Filter, Plus } from 'lucide-react';
@@ -13,7 +13,7 @@ interface ActivitiesFilterBarProps {
   type: string;
   onProgramIdChange: (value: string) => void;
   onTypeChange: (value: string) => void;
-  onNewActivity: () => void;
+  onNewActivity?: () => void;
 }
 
 export function ActivitiesFilterBar({
@@ -54,10 +54,12 @@ export function ActivitiesFilterBar({
           </Select>
         </div>
 
-        <Button onClick={onNewActivity} className="shrink-0">
-          <Plus className="w-4 h-4" />
-          Nueva Actividad
-        </Button>
+        {onNewActivity && (
+          <Button onClick={onNewActivity} className="shrink-0">
+            <Plus className="w-4 h-4" />
+            Nueva Actividad
+          </Button>
+        )}
       </div>
     </div>
   );
