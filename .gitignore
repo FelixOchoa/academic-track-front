@@ -36,3 +36,8 @@ Thumbs.db
 
 # IDE
 .idea/
+
+# Despliegue en AWS (estado local, archivos generados y backend clonado)
+infra/.estado
+infra/generado/
+infra/.build/
