@@ -46,6 +46,16 @@ ok "Backend $BACKEND_REF @ $(git -C "$BUILD/backend" rev-parse --short HEAD) · 
 touch "$ESTADO"
 # shellcheck disable=SC1090
 source "$ESTADO"
+# Si el archivo local se perdió (otra sesión de CloudShell) pero ya hay un despliegue, se recuperan de Secrets Manager
+if [ -z "${DB_PASSWORD:-}" ]; then
+  CONN_ACTUAL=$(aws secretsmanager get-secret-value --secret-id "$P/db-connection" --query SecretString --output text 2>/dev/null || true)
+  DB_PASSWORD=$(printf '%s' "$CONN_ACTUAL" | sed -n 's/.*Password=\([^;]*\).*/\1/p')
+  [ -n "$DB_PASSWORD" ] && echo "DB_PASSWORD=$DB_PASSWORD" >> "$ESTADO"
+fi
+if [ -z "${JWT_KEY:-}" ]; then
+  JWT_KEY=$(aws secretsmanager get-secret-value --secret-id "$P/jwt-key" --query SecretString --output text 2>/dev/null || true)
+  [ -n "$JWT_KEY" ] && echo "JWT_KEY=$JWT_KEY" >> "$ESTADO"
+fi
 if [ -z "${DB_PASSWORD:-}" ]; then
   DB_PASSWORD=$(openssl rand -hex 16); echo "DB_PASSWORD=$DB_PASSWORD" >> "$ESTADO"
 fi
