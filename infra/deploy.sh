@@ -21,8 +21,10 @@ BACKEND_REPO="${BACKEND_REPO:-https://github.com/Ana-Vega05/academic-track.git}"
 BACKEND_REF="${BACKEND_REF:-main}"
 ESTADO="infra/.estado"
 GEN="infra/generado"
-BUILD="infra/.build"
+# Compilación fuera de /home: en CloudShell el directorio personal tiene 1 GB
+BUILD="${BUILD_DIR:-/tmp/acadtrack-build}"
 mkdir -p "$GEN" "$BUILD"
+export NUGET_PACKAGES="$BUILD/nuget" npm_config_cache="$BUILD/npm-cache" DOTNET_CLI_TELEMETRY_OPTOUT=1 NEXT_TELEMETRY_DISABLED=1
 
 log() { printf '\n\033[1;33m==> %s\033[0m\n' "$*"; }
 ok()  { printf '    %s\n' "$*"; }
@@ -60,17 +62,38 @@ for app in frontend backend; do
       --image-tag-mutability IMMUTABLE >/dev/null
 done
 aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY" >/dev/null
-construir() { # app carpeta
-  if aws ecr describe-images --repository-name "$P-$1" --image-ids imageTag="$TAG" >/dev/null 2>&1; then
-    ok "$P-$1:$TAG ya está en ECR (las etiquetas son inmutables)"
-  else
-    docker build --platform linux/amd64 -t "$REGISTRY/$P-$1:$TAG" "$2"
-    docker push "$REGISTRY/$P-$1:$TAG"
-    docker image prune -af >/dev/null 2>&1 || true   # libera espacio en CloudShell
-  fi
+# Se compila fuera de Docker y la imagen solo empaqueta el resultado: el Docker de CloudShell
+# usa el driver vfs y una compilación multi-etapa con el SDK de .NET agota su disco.
+existe() { aws ecr describe-images --repository-name "$P-$1" --image-ids imageTag="$TAG" >/dev/null 2>&1; }
+empaquetar() { # app carpeta_con_el_resultado
+  docker build --platform linux/amd64 -f "infra/docker/$1.Dockerfile" -t "$REGISTRY/$P-$1:$TAG" "$2"
+  docker push "$REGISTRY/$P-$1:$TAG"
+  docker system prune -af >/dev/null 2>&1 || true
 }
-construir backend "$BUILD/backend"
-construir frontend "."
+if existe backend; then
+  ok "$P-backend:$TAG ya está en ECR (las etiquetas son inmutables)"
+else
+  if ! command -v dotnet >/dev/null || ! dotnet --list-sdks | grep -q '^8\.'; then
+    curl -sSL https://dot.net/v1/dotnet-install.sh -o "$BUILD/dotnet-install.sh"
+    bash "$BUILD/dotnet-install.sh" --channel 8.0 --install-dir "$BUILD/dotnet" >/dev/null
+    export PATH="$BUILD/dotnet:$PATH" DOTNET_ROOT="$BUILD/dotnet"
+  fi
+  rm -rf "$BUILD/publish-backend"
+  dotnet publish "$BUILD/backend/AcademicTrack.API/AcademicTrack.API.csproj" -c Release \
+    -o "$BUILD/publish-backend" /p:UseAppHost=false -nologo -v q
+  empaquetar backend "$BUILD/publish-backend"
+fi
+if existe frontend; then
+  ok "$P-frontend:$TAG ya está en ECR (las etiquetas son inmutables)"
+else
+  rm -rf "$BUILD/frontend" "$BUILD/publish-frontend" && mkdir -p "$BUILD/frontend" "$BUILD/publish-frontend/.next"
+  tar --exclude=./node_modules --exclude=./.next --exclude=./infra --exclude=./.git -cf - . | tar -xf - -C "$BUILD/frontend"
+  (cd "$BUILD/frontend" && unset NEXT_PUBLIC_API_URL && npm ci --no-audit --no-fund && npm run build)
+  cp -r "$BUILD/frontend/.next/standalone/." "$BUILD/publish-frontend/"
+  cp -r "$BUILD/frontend/.next/static" "$BUILD/publish-frontend/.next/static"
+  cp -r "$BUILD/frontend/public" "$BUILD/publish-frontend/public"
+  empaquetar frontend "$BUILD/publish-frontend"
+fi
 
 # ---------------------------------------------------------------- Red
 log "2/11 VPC por defecto y subredes en dos zonas"
