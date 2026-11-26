@@ -1,0 +1,7 @@
+# Copiar a terraform.tfvars para cambiar valores por defecto (deploy.sh ya pasa image_tag y lambda_zip_path).
+# region             = "us-east-1"
+# project            = "acadtrack"
+# frontend_desired_count = 2
+# backend_min_count  = 2
+# backend_max_count  = 4
+# enable_autoscaling = false   # si el lab no permite Application Auto Scaling
