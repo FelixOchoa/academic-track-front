@@ -18,7 +18,7 @@ output "ecr_repositories" {
 
 output "indicators_bucket" {
   description = "Bucket de S3 con los Excel (uploads/) y las métricas procesadas (processed/)"
-  value       = aws_s3_bucket.indicators.bucket
+  value       = data.aws_s3_bucket.indicators.bucket
 }
 
 output "indicator_processor_lambda" {

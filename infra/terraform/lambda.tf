@@ -9,14 +9,18 @@
 #   Panel <- API (ECS) <--GetObject-- s3://bucket/processed/{programa}/{sección}.json
 #
 # Así todas las réplicas de la API ven los mismos datos y sobreviven a cada despliegue.
+#
+# El bucket lo crea deploy.sh con la CLI y aquí se referencia con un data source: el recurso aws_s3_bucket
+# lee la configuración de Object Lock después de crearlo, y el rol voclabs del Learner Lab tiene denegado
+# s3:GetBucketObjectLockConfiguration. Todo lo demás del bucket (acceso público, cifrado, ciclo de vida,
+# notificación) sí lo gestiona Terraform. destroy.sh lo vacía y lo borra al final.
 
-resource "aws_s3_bucket" "indicators" {
-  bucket        = "${var.project}-indicators-${local.account_id}"
-  force_destroy = true # el lab se destruye completo con terraform destroy
+data "aws_s3_bucket" "indicators" {
+  bucket = "${var.project}-indicators-${local.account_id}"
 }
 
 resource "aws_s3_bucket_public_access_block" "indicators" {
-  bucket                  = aws_s3_bucket.indicators.id
+  bucket                  = data.aws_s3_bucket.indicators.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -24,7 +28,7 @@ resource "aws_s3_bucket_public_access_block" "indicators" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "indicators" {
-  bucket = aws_s3_bucket.indicators.id
+  bucket = data.aws_s3_bucket.indicators.id
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -34,7 +38,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "indicators" {
 
 # Los Excel originales solo se necesitan para reprocesar: se borran a los 30 días
 resource "aws_s3_bucket_lifecycle_configuration" "indicators" {
-  bucket = aws_s3_bucket.indicators.id
+  bucket = data.aws_s3_bucket.indicators.id
   rule {
     id     = "expirar-uploads"
     status = "Enabled"
@@ -85,12 +89,12 @@ resource "aws_lambda_permission" "allow_s3" {
   action         = "lambda:InvokeFunction"
   function_name  = aws_lambda_function.indicator_processor.function_name
   principal      = "s3.amazonaws.com"
-  source_arn     = aws_s3_bucket.indicators.arn
+  source_arn     = data.aws_s3_bucket.indicators.arn
   source_account = local.account_id
 }
 
 resource "aws_s3_bucket_notification" "indicators" {
-  bucket = aws_s3_bucket.indicators.id
+  bucket = data.aws_s3_bucket.indicators.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.indicator_processor.arn

@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "backend" {
       { name = "ASPNETCORE_URLS", value = "http://+:80" },
       { name = "AWS_REGION", value = var.region },
       # Con el bucket configurado, la API sube los Excel a S3 y los procesa la Lambda (ver lambda.tf)
-      { name = "Indicators__BucketName", value = aws_s3_bucket.indicators.bucket },
+      { name = "Indicators__BucketName", value = data.aws_s3_bucket.indicators.bucket },
     ]
     secrets = [
       { name = "ConnectionStrings__DefaultConnection", valueFrom = aws_secretsmanager_secret.db_connection.arn },

@@ -22,3 +22,6 @@ mkdir -p build
 
 terraform destroy -input=false -auto-approve \
   -var "region=$REGION" -var "project=$P" -var "lambda_zip_path=build/indicator-processor.zip"
+
+# El bucket de indicadores lo crea deploy.sh (no Terraform, por la restricción de Object Lock del lab)
+aws s3 rb "s3://$P-indicators-$ACCOUNT" --force >/dev/null 2>&1 || true

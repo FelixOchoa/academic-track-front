@@ -110,12 +110,13 @@ Se conserva el bucket del estado (`acadtrack-tfstate-<cuenta>`).
 | `ecr.tf` | Repositorios inmutables con escaneo al subir y retención de 10 imágenes |
 | `alb.tf` | Balanceador, target groups y reglas `/api/*` y `/swagger*` |
 | `ecs.tf` | Clúster, task definitions, services con circuit breaker y rollback, auto scaling |
-| `lambda.tf` | Bucket de indicadores, Lambda, permiso, notificación de S3 y alarma de errores |
+| `lambda.tf` | Configuración del bucket de indicadores, Lambda, permiso, notificación de S3 y alarma de errores |
 | `outputs.tf` | URL, Swagger, bucket, Lambda, endpoint de RDS |
 
 ## Adaptaciones al Learner Lab
 
 - No se pueden crear roles de IAM: Terraform usa `data "aws_iam_role"` con **LabRole** como execution role y task role de ECS, y como rol de la Lambda.
+- El rol `voclabs` del lab tiene denegado `s3:GetBucketObjectLockConfiguration`, y el recurso `aws_s3_bucket` de Terraform siempre lo lee después de crear un bucket. Por eso `deploy.sh` crea el bucket de indicadores con AWS CLI y Terraform lo referencia con `data "aws_s3_bucket"`. Terraform sigue gestionando el acceso público, el cifrado, el ciclo de vida y la notificación hacia la Lambda; `destroy.sh` borra el bucket al final.
 - Sin NAT Gateway (costo): las tareas usan subredes públicas con IP pública para descargar de ECR y acceder a S3; los security groups solo dejan pasar tráfico desde el balanceador. La Lambda no necesita VPC porque solo usa S3.
 - RDS en una sola zona y sin copias automáticas para ahorrar crédito. En producción: Multi-AZ, backups y `deletion_protection`.
 - Si el lab no permite Application Auto Scaling, pon `enable_autoscaling = false` en `terraform.tfvars`.

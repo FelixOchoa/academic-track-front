@@ -73,7 +73,7 @@ fi
 ok "Backend @ $(git -C "$BUILD/backend" rev-parse --short HEAD) · frontend $(git -C "$FRONT_DIR" rev-parse --abbrev-ref HEAD) @ $(git -C "$FRONT_DIR" rev-parse --short HEAD)"
 
 # ---------------------------------------------------------------- Estado remoto
-log "3/7 Estado de Terraform en S3 (con bloqueo nativo)"
+log "3/7 Buckets: estado de Terraform (con bloqueo nativo) e indicadores"
 STATE_BUCKET="$P-tfstate-$ACCOUNT"
 if ! aws s3api head-bucket --bucket "$STATE_BUCKET" 2>/dev/null; then
   if [ "$REGION" = "us-east-1" ]; then
@@ -84,6 +84,16 @@ if ! aws s3api head-bucket --bucket "$STATE_BUCKET" 2>/dev/null; then
   aws s3api put-bucket-versioning --bucket "$STATE_BUCKET" --versioning-configuration Status=Enabled
   aws s3api put-public-access-block --bucket "$STATE_BUCKET" \
     --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+fi
+# Bucket de los Excel de indicadores: se crea aquí y no en Terraform porque el rol del Learner Lab no puede
+# leer su configuración de Object Lock, algo que el recurso aws_s3_bucket hace siempre (ver lambda.tf).
+INDICATORS_BUCKET="$P-indicators-$ACCOUNT"
+if ! aws s3api head-bucket --bucket "$INDICATORS_BUCKET" 2>/dev/null; then
+  if [ "$REGION" = "us-east-1" ]; then
+    aws s3api create-bucket --bucket "$INDICATORS_BUCKET" >/dev/null
+  else
+    aws s3api create-bucket --bucket "$INDICATORS_BUCKET" --create-bucket-configuration LocationConstraint="$REGION" >/dev/null
+  fi
 fi
 terraform init -input=false -reconfigure \
   -backend-config="bucket=$STATE_BUCKET" -backend-config="key=academictrack/terraform.tfstate" \
